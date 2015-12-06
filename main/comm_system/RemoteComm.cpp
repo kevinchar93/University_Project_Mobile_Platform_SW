@@ -85,7 +85,7 @@ bool RemoteComm::isStillConnected ()
     return false;
 }
 
-void RemoteComm::sendReading ()
+void RemoteComm::sendReading (char* reading)
 {
 
 }
@@ -101,5 +101,5 @@ int RemoteComm::isInstructionAvailable ()
 
 void RemoteComm::readInstructions ()
 {
-    return '0';
+
 }

@@ -12,7 +12,7 @@
     class RemoteComm
     {
         public:
-            RobotRemotComm(int state, int button, int led, int baudRate);
+            RemoteComm(int state, int button, int led, int baudRate);
             void    waitForConnection ();
             bool    isStillConnected();
             void    sendReading(char*);
@@ -25,5 +25,5 @@
             int _led;
             int _baudRate;
             bool _isInit;
-    }
+    };
 #endif
