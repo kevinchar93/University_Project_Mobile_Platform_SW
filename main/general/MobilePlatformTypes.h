@@ -1,0 +1,29 @@
+/*
+    MobilePlatformType - a file that defines all the types used in the
+    mobile platforms arduino software, declared as simple enums
+*/
+
+#ifndef MOB_PLATFOM_TYPES_H
+#define MOB_PLATFOM_TYPES_H
+
+enum MOB_ERROR
+{
+    ERR_NOT_INITIALISED = -2,
+    ERR_MAX_VALUES = -1
+}
+
+enum MOB_INSTRUCTION
+{
+    INSTRUCT_MOVE_FORWARD = 0,
+    INSTRUCT_MOV_BACKWARD,
+    INSTRUCT_TURN_ZERO_RIGHT,
+    INSTRUCT_TURN_ZERO_LEFT,
+    INSTRUCT_TURN_RIGHT_ON_WHEEL,
+    INSTRUCT_TURN_LEFT_ON_WHEEL,
+    INSTRUCT_TURN_ABOUT_POINT_RIGHT,
+    INSTRUCT_TURN_ABOUT_POINT_LEFT,
+    INSTRUCT_LIDAR_360_SWEEP,
+    INSTRUCT_LIDAR_AT_POINT,
+    INSTRUCT_MAX_VALUES
+}
+#endif
