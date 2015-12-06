@@ -7,7 +7,7 @@
 #ifndef REMOTE_COMM_H
 #define REMOTE_COMM_H
 
-#include "Arduino.h"
+#include <Arduino.h>
 
     class RemoteComm
     {
@@ -15,9 +15,9 @@
             RemoteComm(int state, int button, int led, int baudRate);
             void    waitForConnection ();
             bool    isStillConnected();
-            void    sendReading(char*);
+            int     sendReadings(char* readings);
             int     isInstructionAvailable();
-            void   readInstructions();
+            int     readInstructions(char* buffer, int bytes);
 
         private:
             int _state;

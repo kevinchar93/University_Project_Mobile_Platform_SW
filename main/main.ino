@@ -1,11 +1,21 @@
-#include "RemoteComm.h"
+#include <RemoteComm.h>
+#include <MobilePlatformTypes.h>
+#include <PinMap.h>
+#include <AccelStepper.h>
+#include <MultiStepper.h>
+
+
+RemoteComm robotComm(COMM_STATE_PIN, COMM_BUTTON_PIN, COMM_LED_PIN, COMM_BAUD_RATE);
 
 void setup() {
-  // put your setup code here, to run once:
+
+    robotComm.waitForConnection();
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
+  char charArray[] = "a bunch of characters\n";
+  robotComm.sendReadings(charArray);
 
 }
