@@ -6,7 +6,7 @@
 /* Comm system pins */
 #define COMM_TX_PIN 18          // we transmit from this pin
 #define COMM_RX_PIN 19          // we recieve on this pin
-#define COMM_ENAMBLE_PIN -1     // not used
+#define COMM_ENABLE_PIN -1      // not used
 #define COMM_STATE_PIN 22
 #define COMM_BUTTON_PIN 23
 #define COMM_LED_PIN 24

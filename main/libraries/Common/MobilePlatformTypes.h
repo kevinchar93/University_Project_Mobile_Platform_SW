@@ -26,6 +26,7 @@ enum MOB_TYPES
     INSTRUCT_LIDAR_AT_POINT,
 
     /* Other types */
-    SENSOR_READING_LIDAR
+    SENSOR_READING_LIDAR,
+    INSTRUCT_TERMINATOR = '\0'
 };
 #endif
