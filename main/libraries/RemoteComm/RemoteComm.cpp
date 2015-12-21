@@ -74,6 +74,13 @@ void RemoteComm::waitForConnection ()
 
     /* Set the led to a solid light to signal program will continue */
     digitalWrite(_led, HIGH);
+
+    /*
+       Place a delay here of 200 milliseconds, act as simple debounce mechanism
+       as the button might still read high for a while after it is pressed
+     */
+    delay(200);
+
 }
 
 bool RemoteComm::isStillConnected ()
