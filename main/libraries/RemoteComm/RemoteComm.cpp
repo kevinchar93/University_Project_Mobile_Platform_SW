@@ -22,7 +22,7 @@ RemoteComm::RemoteComm(int state, int button, int led, int baudRate)
 void RemoteComm::waitForConnection ()
 {
     bool keepLooping = true;
-    bool handshakeSignal = false;
+    bool handShakeSignalA = false;
 
     int stateValue = LOW;
     int switchValue = HIGH;
@@ -63,11 +63,11 @@ void RemoteComm::waitForConnection ()
             {
                 prevTimeHandshake = currTimeHandshake;
                 /* Check for the handshake first stage */
-                handshakeSignal = handshake();
+                handShakeSignalA = handshake();
             }
         }
 
-        if (handshakeSignal)
+        if (handShakeSignalA)
         {
             /* We have a connection, blink led slower and wait for button press */
             interval = REMOTE_COMM_CONNECTED_INTERVAL;
@@ -85,6 +85,10 @@ void RemoteComm::waitForConnection ()
                 switchValue = digitalRead(_button);
                 keepLooping = (switchValue == HIGH) ? true : false;
             }
+
+            /* Send signal to say we've pressed the button and to continue */
+            Serial1.print(HANDSHAKE_SIGNAL_B);
+            _print->println("send hand shake stage B signal");
         }
     }
 
@@ -132,12 +136,26 @@ bool RemoteComm::handshake()
 {
     if (Serial1.available() <= 0)
     {
-        Serial1.println(HANDSHAKE_SIGNAL);
+        _print->println("send handshake signal");
+        Serial1.print(HANDSHAKE_SIGNAL_A);
         return false;
     }
     else
     {
-        return true;
+        _print->print("read vaue sent:");
+        char read = Serial1.read();
+        _print->println(read);
+        if (read == HANDSHAKE_RECEIVE_SIGNAL)
+        {
+            _print->println("values match");
+            return true;
+        }
+        else
+        {
+            _print->println("values do not match");
+            return false;
+        }
+
     }
 }
 
