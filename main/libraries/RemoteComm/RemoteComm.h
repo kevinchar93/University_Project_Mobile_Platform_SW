@@ -18,12 +18,15 @@
             int     sendReadings(char* readings);
             int     isInstructionAvailable();
             int     readInstructions(char* buffer, int bytes);
+            void    setPrint(HardwareSerial  &print);
 
         private:
+            bool    handshake();
             int _state;
             int _button;
             int _led;
             int _baudRate;
             bool _isInit;
+            HardwareSerial* _print;
     };
 #endif

@@ -21,22 +21,27 @@ RemoteComm::RemoteComm(int state, int button, int led, int baudRate)
 
 void RemoteComm::waitForConnection ()
 {
-    boolean keepLooping = true;
+    bool keepLooping = true;
+    bool handshakeSignal = false;
 
     int stateValue = LOW;
     int switchValue = HIGH;
     int ledValue = HIGH;
 
-    unsigned long interval = 100;
     unsigned long currTime = 0;
+    unsigned long interval = REMOTE_COMM_SEARCHNG_INTERVAL;
     unsigned long prevTime = 0;
+
+    unsigned long currTimeHandshake = 0;
+    unsigned long intervalHandshake = HANDSHAKE_PULSE_INTERVAL;
+    unsigned long prevTimeHandshake = 0;
 
     pinMode(_state, INPUT);
     pinMode(_button, INPUT_PULLUP);
     pinMode(_led, OUTPUT);
 
     digitalWrite(_led, ledValue);
-
+    _print->begin(9600);
     while (keepLooping)
     {
         /* Keep looping checkiing to see if connection established, use led as a signal */
@@ -53,8 +58,19 @@ void RemoteComm::waitForConnection ()
 
         if (HIGH == stateValue)
         {
+            currTimeHandshake = millis();
+            if (currTimeHandshake - prevTimeHandshake >= intervalHandshake)
+            {
+                prevTimeHandshake = currTimeHandshake;
+                /* Check for the handshake first stage */
+                handshakeSignal = handshake();
+            }
+        }
+
+        if (handshakeSignal)
+        {
             /* We have a connection, blink led slower and wait for button press */
-            interval = 333;
+            interval = REMOTE_COMM_CONNECTED_INTERVAL;
             while (keepLooping)
             {
                 currTime = millis();
@@ -76,10 +92,10 @@ void RemoteComm::waitForConnection ()
     digitalWrite(_led, HIGH);
 
     /*
-       Place a delay here of 200 milliseconds, act as simple debounce mechanism
+       Place a delay here , it will act as simple debounce mechanism
        as the button might still read high for a while after it is pressed
      */
-    delay(200);
+    delay(REMOTE_COMM_DEBOUNCE_TIME_MS);
 
 }
 
@@ -110,4 +126,21 @@ int RemoteComm::isInstructionAvailable ()
 int RemoteComm::readInstructions (char* buffer, int bytes)
 {
     return Serial1.readBytes(buffer, bytes);
+}
+
+bool RemoteComm::handshake()
+{
+    if (Serial1.available() <= 0)
+    {
+        Serial1.println(HANDSHAKE_SIGNAL);
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+void RemoteComm::setPrint(HardwareSerial  &print) {
+    _print = &print;
 }
