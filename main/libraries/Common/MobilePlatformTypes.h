@@ -19,21 +19,24 @@
 #define REMOTE_COMM_DEBOUNCE_TIME_MS 200
 
 
+enum INSTRUCTION_SET
+{
+    /* Instruction set */
+    INS_STOP                = 0,
+    INS_MOVE_FORWARD        = 1,
+    INS_MOVE_BACKWARD       = 2,
+    INS_TURN_ZERO_RIGHT_90  = 3,
+    INS_TURN_ZERO_LEFT_90   = 4,
+    INS_TURN_AROUND_180     = 5,
+    INS_LIDAR_360_SWEEP     = 6,
+    INS_LIDAR_AT_ANGLE      = 7,
+};
+
 enum MOB_TYPES
 {
     /*Error types */
     ERR_NO_SERIAL_DATA          = -2,
     ERR_NOT_INITIALISED         = -1,
-
-    /* Instruction set */
-    INSTRUCT_STOP               = 0,
-    INSTRUCT_MOVE_FORWARD       = 1,
-    INSTRUCT_MOVE_BACKWARD      = 2,
-    INSTRUCT_TURN_ZERO_RIGHT_90 = 3,
-    INSTRUCT_TURN_ZERO_LEFT_90  = 4,
-    INSTRUCT_TURN_AROUND_180    = 5,
-    INSTRUCT_LIDAR_360_SWEEP    = 6,
-    INSTRUCT_LIDAR_AT_ANGLE     = 7,
 
     /* Other types */
     SENSOR_READING_LIDAR,
