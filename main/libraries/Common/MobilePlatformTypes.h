@@ -1,27 +1,17 @@
 /*
-    MobilePlatformType - a file that defines all the types used in the
-    mobile platforms arduino software, declared as simple enums
+    MobilePlatformTypes.h - a file that defines all the types used in the
+    mobile platform's arduino software
 */
 
 #ifndef MOB_PLATFOM_TYPES_H
 #define MOB_PLATFOM_TYPES_H
 
-#define INSTRUCTION_BUFFER_SIZE 256
-
-/* RemoteComm definitions */
-#define HANDSHAKE_RECEIVE_SIGNAL 'S'
-#define HANDSHAKE_PULSE_INTERVAL 500
-#define HANDSHAKE_SIGNAL_A 'A'
-#define HANDSHAKE_SIGNAL_B 'B'
-
-#define REMOTE_COMM_SEARCHNG_INTERVAL 100
-#define REMOTE_COMM_CONNECTED_INTERVAL 333
-#define REMOTE_COMM_DEBOUNCE_TIME_MS 200
-
-
-enum INSTRUCTION_SET
+/*
+    Defines the set of instructions that the robot can receive
+    and execute
+*/
+typedef enum INSTRUCTION_SET
 {
-    /* Instruction set */
     INS_STOP                = 0,
     INS_MOVE_FORWARD        = 1,
     INS_MOVE_BACKWARD       = 2,
@@ -30,7 +20,7 @@ enum INSTRUCTION_SET
     INS_TURN_AROUND_180     = 5,
     INS_LIDAR_360_SWEEP     = 6,
     INS_LIDAR_AT_ANGLE      = 7,
-};
+} INSTRUCTION_SET;
 
 enum MOB_TYPES
 {
@@ -42,4 +32,27 @@ enum MOB_TYPES
     SENSOR_READING_LIDAR,
     INSTRUCT_TERMINATOR = '\n'
 };
+
+/*
+    Used to define size of and access the char arrays,
+    used to implement the instruction parser buffer
+*/
+enum INSTRUCTION_FIELD
+{
+    INSTRUCTION_FIELD_TYPE                 = 0,
+    INSTRUCTION_FIELD_VALUE                = 1,
+    INSTRUCTION_FIELD_USE_DIRECT_VALUE     = 2,
+    INSTRUCTION_FIELD_MAX
+};
+
+/*
+    Defines a struct that will hold information about an instruction
+    that can be executed by the robot
+*/
+typedef struct instruction
+{
+    long    type;
+    int     value;
+    bool    useDirectValue;
+} Instruction;
 #endif

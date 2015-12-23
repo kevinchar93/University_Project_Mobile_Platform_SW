@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "RemoteComm.h"
 #include "MobilePlatformTypes.h"
+#include "MobilePlatformDefinitions.h"
 
 RemoteComm::RemoteComm(int state, int button, int led, int baudRate)
 {
@@ -115,7 +116,10 @@ bool RemoteComm::isStillConnected ()
 
 int RemoteComm::sendReadings (char* readings)
 {
-    return Serial1.print(readings);
+    int sentBytes = Serial1.println(readings);
+    Serial1.flush();
+
+    return sentBytes;
 }
 
 int RemoteComm::isInstructionAvailable ()
