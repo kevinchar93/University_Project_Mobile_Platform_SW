@@ -21,26 +21,42 @@ void setup()
     bytesRead = 0;
     Serial.begin(9600);
 
-    char a[] = "1,40;";
-    char b[] = "2;";
-    char c[] = "3;";
-    char d[] = "4,50;";
-    char e[] = "5,60,T;";
-    char f[] = "8,70,F;";
+    Instruction temp;
+
+    const int numIns = 6;
+    const int insSize = 10;
+
+    char ins[numIns][insSize] = {"1,40;", "2,3453,T;" , "3;" , "4,50;" , "5,60,T;" , "8,70,F;"};
 
 
-    parseInstructionString(a);
-    parseInstructionString(b);
-    parseInstructionString(c);
-    parseInstructionString(d);
-    parseInstructionString(e);
-    parseInstructionString(f);
+    for (int i = 0; i < numIns; i++)
+    {
+        Serial.print("Instruction num:");
+        Serial.println(i);
+
+        temp = parseInstructionString(ins[i]);
+
+        Serial.print("Instruction num: ");
+        Serial.println(temp.type);
+
+        Serial.print("Instruction value: ");
+        Serial.println(temp.value);
+
+        Serial.print("Grid mode? : ");
+        Serial.println(temp.gridMode);
+
+        Serial.println("--------------------------");
+        Serial.println();
+
+        Serial.flush();
+    }
 
 
     robotComm.setPrint(Serial);
     robotComm.waitForConnection();
 
 }
+
 
 void loop()
 {
@@ -59,33 +75,6 @@ void loop()
     */
 }
 
-Instruction parseInstructionString (char* insStr)
-{
-    char* parserBuffer [PARSER_BUFFER_SIZE];
-
-    for(int i = INSTRUCTION_FIELD_TYPE; i < INSTRUCTION_FIELD_MAX; i++)
-    {
-        parserBuffer[i] = strtok((i==0) ? insStr : NULL, ",;");
-    }
-
-    // DEBGUG
-    Serial.print("Instruction type:");
-    Serial.println(parserBuffer[INSTRUCTION_FIELD_TYPE]);
-    if (parserBuffer[INSTRUCTION_FIELD_VALUE] != NULL)
-    {
-        Serial.print("Instruction value:");
-        Serial.println(parserBuffer[INSTRUCTION_FIELD_VALUE]);
-    }
-
-    if (parserBuffer[INSTRUCTION_FIELD_USE_DIRECT_VALUE] != NULL)
-    {
-        Serial.print("Instruction use dir value:");
-        Serial.println(parserBuffer[INSTRUCTION_FIELD_USE_DIRECT_VALUE]);
-    }
-    Serial.flush();
-
-    return {0 , 0 , 0};
-}
 
 void todo1 ()
 {

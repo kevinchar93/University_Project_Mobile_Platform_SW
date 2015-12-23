@@ -10,7 +10,7 @@
     Defines the set of instructions that the robot can receive
     and execute
 */
-typedef enum INSTRUCTION_SET
+typedef enum _INSTRUCTION_SET
 {
     INS_STOP                = 0,
     INS_MOVE_FORWARD        = 1,
@@ -41,7 +41,7 @@ enum INSTRUCTION_FIELD
 {
     INSTRUCTION_FIELD_TYPE                 = 0,
     INSTRUCTION_FIELD_VALUE                = 1,
-    INSTRUCTION_FIELD_USE_DIRECT_VALUE     = 2,
+    INSTRUCTION_FIELD_GRID_MODE        = 2,
     INSTRUCTION_FIELD_MAX
 };
 
@@ -49,10 +49,10 @@ enum INSTRUCTION_FIELD
     Defines a struct that will hold information about an instruction
     that can be executed by the robot
 */
-typedef struct instruction
+typedef struct _Instruction
 {
-    long    type;
+    INSTRUCTION_SET type;
     int     value;
-    bool    useDirectValue;
+    bool    gridMode;
 } Instruction;
 #endif
