@@ -13,27 +13,11 @@ Instruction parseInstructionString (char* insStr)
 
     Instruction tempInstruction;
 
+    /* Split the instruction string into tokens we can parse */
     for(int i = INSTRUCTION_FIELD_TYPE; i < INSTRUCTION_FIELD_MAX; i++)
     {
         parserBuffer[i] = strtok((i==0) ? insStr : NULL, ",;");
     }
-
-    /* DEBGUG
-    Serial.print("Instruction type:");
-    Serial.println(parserBuffer[INSTRUCTION_FIELD_TYPE]);
-    if (parserBuffer[INSTRUCTION_FIELD_VALUE] != NULL)
-    {
-        Serial.print("Instruction value:");
-        Serial.println(parserBuffer[INSTRUCTION_FIELD_VALUE]);
-    }
-
-    if (parserBuffer[INSTRUCTION_FIELD_GRID_MODE] != NULL)
-    {
-        Serial.print("Instruction use dir value:");
-        Serial.println(parserBuffer[INSTRUCTION_FIELD_GRID_MODE]);
-    }
-    Serial.flush();
-    */
 
     /* Convert values in the buffer to the correct datatype */
     type = atoi(parserBuffer[INSTRUCTION_FIELD_TYPE]);
@@ -44,19 +28,7 @@ Instruction parseInstructionString (char* insStr)
     gridMode = (parserBuffer[INSTRUCTION_FIELD_GRID_MODE][0] == 'T' ) ?
                 true : false;
 
-    /*
-    Serial.println("Parsed values with atio function");
-    Serial.print("parsed Type: ");
-    Serial.println(type);
-    Serial.print("parsed val: ");
-    Serial.println(val);
-    Serial.print("parsed gridMode: ");
-    Serial.println(gridMode);
-    Serial.println("----------------------------");
-    Serial.println();
-    Serial.flush();
-    */
-
+    /* Put the extracted values into the instruction struct and return it */
     tempInstruction.type = (INSTRUCTION_SET) type;
     tempInstruction.value = val;
     tempInstruction.gridMode = gridMode;
