@@ -12,14 +12,15 @@
 */
 typedef enum _INSTRUCTION_SET
 {
-    INS_STOP                = 0,
-    INS_MOVE_FORWARD        = 1,
-    INS_MOVE_BACKWARD       = 2,
-    INS_TURN_ZERO_RIGHT_90  = 3,
-    INS_TURN_ZERO_LEFT_90   = 4,
-    INS_TURN_AROUND_180     = 5,
-    INS_LIDAR_360_SWEEP     = 6,
-    INS_LIDAR_AT_ANGLE      = 7,
+    INS_ERROR               = 0,
+    INS_STOP                = 1,
+    INS_MOVE_FORWARD        = 2,
+    INS_MOVE_BACKWARD       = 3,
+    INS_TURN_ZERO_RIGHT_90  = 4,
+    INS_TURN_ZERO_LEFT_90   = 5,
+    INS_TURN_AROUND_180     = 6,
+    INS_LIDAR_360_SWEEP     = 7,
+    INS_LIDAR_AT_ANGLE      = 8
 } INSTRUCTION_SET;
 
 enum MOB_TYPES
@@ -52,7 +53,7 @@ enum INSTRUCTION_FIELD
 typedef struct _Instruction
 {
     INSTRUCTION_SET type;
-    int     value;
+    unsigned int     value;
     bool    gridMode;
 } Instruction;
 #endif

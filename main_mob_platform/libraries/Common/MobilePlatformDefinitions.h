@@ -8,8 +8,8 @@
 
 #include "MobilePlatformTypes.h"
 
-/* Size of the iinsturction buffer used in the main.ino */
-#define INSTRUCTION_BUFFER_SIZE 256
+/* Size of the instruction buffer used in the main.ino */
+#define INSTRUCTION_BUFFER_SIZE 32
 
 /* Defs related to the instruction parser utility function */
 #define PARSER_BUFFER_SIZE INSTRUCTION_FIELD_MAX
@@ -24,5 +24,12 @@
 #define REMOTE_COMM_SEARCHNG_INTERVAL 100
 #define REMOTE_COMM_CONNECTED_INTERVAL 333
 #define REMOTE_COMM_DEBOUNCE_TIME_MS 200
+
+/* Defs related to the robots motion */
+#define MAX_SINGLE_TRAVEL_DIST_CM 500
+#define MAX_SINGLED_TRAVEL_DIST_GRID 20
+
+/* Def related to the robots LIDAR */
+#define MAX_LIDAR_ANGLE 360
 
 #endif
