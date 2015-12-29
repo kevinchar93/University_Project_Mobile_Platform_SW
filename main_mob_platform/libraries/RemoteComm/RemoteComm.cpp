@@ -114,7 +114,7 @@ bool RemoteComm::isStillConnected ()
     return false;
 }
 
-int RemoteComm::sendReadings (char* readings)
+int RemoteComm::sendMessage (const char* readings)
 {
     int sentBytes = Serial1.println(readings);
     Serial1.flush();

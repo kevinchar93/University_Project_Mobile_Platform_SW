@@ -15,7 +15,7 @@ class RemoteComm
         RemoteComm(int state, int button, int led, int baudRate);
         void    waitForConnection ();
         bool    isStillConnected();
-        int     sendReadings(char* readings);
+        int     sendMessage(const char* readings);
         int     isInstructionAvailable();
         int     readInstructions(char* buffer, int bytes);
         void    setPrint(HardwareSerial  &print);

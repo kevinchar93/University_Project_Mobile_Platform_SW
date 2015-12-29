@@ -11,8 +11,11 @@
 /* Size of the instruction buffer used in the main.ino */
 #define INSTRUCTION_BUFFER_SIZE 32
 
-/* Defs related to the instruction parser utility function */
+/* Defs related to the instruction handling */
 #define PARSER_BUFFER_SIZE INSTRUCTION_FIELD_MAX
+#define INSTRUCTION_VERIFIED_OK "INS_OK;"
+#define INSTRUCTION_VERIFIED_ERROR "INS_ER;"
+#define INSTRUCTION_COMPLETE "INS_DONE;"
 
 /* Defs related to the serial handshake procedure */
 #define HANDSHAKE_RECEIVE_SIGNAL 'S'
@@ -26,10 +29,9 @@
 #define REMOTE_COMM_DEBOUNCE_TIME_MS 200
 
 /* Defs related to the robots motion */
-#define MAX_SINGLE_TRAVEL_DIST_CM 500
-#define MAX_SINGLED_TRAVEL_DIST_GRID 20
 
 /* Def related to the robots LIDAR */
 #define MAX_LIDAR_ANGLE 360
+#define LIDAR_DATA_BUFFER_SIZE 4500
 
 #endif
