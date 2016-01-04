@@ -88,7 +88,7 @@ void RemoteComm::waitForConnection ()
             }
 
             /* Send signal to say we've pressed the button and to continue */
-            Serial1.print(HANDSHAKE_SIGNAL_B);
+            Serial1.println(HANDSHAKE_SIGNAL_B);
             _print->println("send hand shake stage B signal");
         }
     }
@@ -141,7 +141,7 @@ bool RemoteComm::handshake()
     if (Serial1.available() <= 0)
     {
         _print->println("send handshake signal");
-        Serial1.print(HANDSHAKE_SIGNAL_A);
+        Serial1.println(HANDSHAKE_SIGNAL_A);
         return false;
     }
     else
