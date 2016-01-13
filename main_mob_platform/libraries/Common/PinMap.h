@@ -13,7 +13,7 @@
 #define COMM_BAUD_RATE 9600
 
 /* Drive System pins */
-#define DS_EN 8   /* Enable pin for the drive system */
+#define CNC_BOARD_ENABLE_PIN 8   /* Enable pin for the drive system */
 
 #define LEFT_DIR 5   /* Direction pin for left (X) stepper */
 #define LEFT_STEP 2  /* Step pin for left (X) stepper */

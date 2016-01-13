@@ -1,6 +1,90 @@
 #include "Lidar360.h"
 
-void Lidar360::initLidar(int btnA, int btnB)
+Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, HardwareSerial  &print)
+{
+    _print = &print;
+    _motor = &mtr;
+    _maxSpeed = maxSpeed;
+    _motor->setMaxSpeed(_maxSpeed);
+    _buttonA = btnA;
+    _buttonB = btnB;
+
+    /* Set the buttons to input mode with a pullup resistor */
+    pinMode(_buttonA, INPUT_PULLUP);
+    pinMode(_buttonB, INPUT_PULLUP);
+
+    /*  need to set enble pin on the CNC board to low to run stepper drivers */
+    pinMode(CNC_BOARD_ENABLE_PIN, OUTPUT);
+    digitalWrite(CNC_BOARD_ENABLE_PIN, LOW);
+
+    /* Finally wait for the Lidar to be set to the zero position */
+    this->zeroStepperMotor();
+}
+
+void Lidar360::testHarness()
+{
+    stepToPosition(560);
+    delay(2000);
+    stepToPosition(280);
+    delay(2000);
+    stepToPosition(140);
+    delay(2000);
+    stepToPosition(420);
+    delay(2000);
+    stepToPosition(0);
+    delay(2000);
+}
+
+void Lidar360::zeroStepperMotor()
+{
+    _print->println("Begin zeroStepperMotor");
+    bool reachedZero = false;
+
+    _motor->setSpeed(_maxSpeed/2);
+
+    while(!reachedZero)
+    {
+        /* If button B is pressed move a step */
+        if (digitalRead(_buttonB) == LOW)
+        {
+            _motor->runSpeed();
+        }
+        /* If button A is pressed ,the Lidar has been zeroed */
+        else if (digitalRead(_buttonA) == LOW)
+        {
+            _motorPosition = 0;
+            _motor->setCurrentPosition(_motorPosition);
+            reachedZero = true;
+        }
+    }
+    _print->println("End zeroStepperMotor");
+}
+
+void Lidar360::stepToPosition(long pos)
+{
+    bool reachedTarget = false;
+
+    if (pos > STEPS_PER_REVOLUTION)
+        return;
+
+    _motor->moveTo(pos);
+    _motor->setSpeed(_maxSpeed);
+    _motor->runSpeedToPosition();
+
+    while(!reachedTarget)
+    {
+        if(_motor->targetPosition() != _motor->currentPosition())
+        {
+            _motor->runSpeed();
+        }
+        else
+        {
+            reachedTarget = true;
+        }
+    }
+}
+
+void Lidar360::initLidar()
 {
     // Opens & joins the irc bus as master
     I2c.begin();
@@ -11,11 +95,8 @@ void Lidar360::initLidar(int btnA, int btnB)
     // Sets a timeout to ensure no locking up of sketch if I2C communication fails
     I2c.timeOut(50);
 
-    _buttonA = btnA;
-    _buttonB = btnB;
-
      // reset device to defaults for distance measurment
-    llWriteAndWait(0x00,0x00);
+    llWriteAndWait(0x00, 0x00);
 }
 
 void Lidar360::setLidarOffSet(int offSet)

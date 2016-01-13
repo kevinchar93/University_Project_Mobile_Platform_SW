@@ -4,6 +4,7 @@
 #include <PinMap.h>
 #include <AccelStepper.h>
 #include <MultiStepper.h>
+#include <Lidar360.h>
 
 
 RemoteComm robotComm(COMM_STATE_PIN, COMM_BUTTON_PIN, COMM_LED_PIN, COMM_BAUD_RATE);
@@ -16,11 +17,14 @@ bool insErrorOccurred;
 
 char lidarDataBuffer [LIDAR_DATA_BUFFER_SIZE];
 
+AccelStepper lidar(AccelStepper::DRIVER, LIDAR_STEP, LIDAR_DIR);
+
 void setup()
 {
     delay(1000);
+    Serial.begin(9600);
 
-    /* Initialise intruction buffer and elements needed to work with it */
+    /* Initialise intruction buffer and elements needed to work with it *
     memset(instructionBuffer, 0, sizeof(instructionBuffer));
     instructionBytes = 0;
     bytesRead = 0;
@@ -31,7 +35,14 @@ void setup()
 
     // initialise connnection
     robotComm.waitForConnection();
+    */
 
+    Lidar360 lidar360(lidar, 200.0, LIDAR_BUTTON_A, LIDAR_BUTTON_B, Serial);
+
+    while (true)
+    {
+        lidar360.testHarness();
+    }
 }
 
 
