@@ -8,8 +8,7 @@
 #define LIDAR_360_H
 
 #include <Arduino.h>
-#include <I2C.h>
-#include <AccelStepper.h>
+#include <I2C.h>#include <AccelStepper.h>
 #include "PinMap.h"
 
 #define STEPS_PER_REVOLUTION 560
@@ -17,11 +16,24 @@
 #define NUM_READS_FOR_AVERAGE 3
 #define LIDAR_LITE_ADDRESS 0x62
 
+#define LIDAR_MANUAL_ZERO_SPEED 50.0
+
+/* Define number of steps to reach these common angles */
+#define LIDAR_0_DEGREES 0
+#define LIDAR_45_DEGREES 70
+#define LIDAR_90_DEGREES 140
+#define LIDAR_135_DEGREES 210
+#define LIDAR_180_DEGREES 280
+#define LIDAR_225_DEGREES 350
+#define LIDAR_270_DEGREES 420
+#define LIDAR_315_DEGREES 490
+
 class Lidar360
 {
     public:
         Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, HardwareSerial  &print);
-        void testHarness();
+        void    testHarness();
+        char*   getDistanceAtHeading(int heading, char* responseBuffer);
 
     private:
         void    zeroStepperMotor();
@@ -34,7 +46,7 @@ class Lidar360
         int     llGetDistance();
         int     llGetDistanceAverage(int numberOfReadings);
 
-
+        int     angleToApproxSteps(int angle);
 
         int _buttonA;
         int _buttonB;

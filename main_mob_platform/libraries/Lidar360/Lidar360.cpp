@@ -18,7 +18,10 @@ Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, Hardwa
     digitalWrite(CNC_BOARD_ENABLE_PIN, LOW);
 
     /* Finally wait for the Lidar to be set to the zero position */
-    this->zeroStepperMotor();
+    zeroStepperMotor();
+
+    /* Init the lidar module it self */
+    initLidar();
 }
 
 void Lidar360::testHarness()
@@ -35,12 +38,25 @@ void Lidar360::testHarness()
     delay(2000);
 }
 
+char* Lidar360::getDistanceAtHeading(int heading, char* responseBuffer)
+{
+    /* Convert the heaading to a nuber of steps to take */
+    uint16_t numSteps = angleToApproxSteps(heading);
+
+    /* Spin the Lidar to the heaading */
+    stepToPosition(heading);
+
+    /* Take a reading at that angle and store it */
+    uint16_t distanceRead = llGetDistanceAverage(NUM_READS_FOR_AVERAGE);
+
+}
+
 void Lidar360::zeroStepperMotor()
 {
     _print->println("Begin zeroStepperMotor");
     bool reachedZero = false;
 
-    _motor->setSpeed(_maxSpeed/2);
+    _motor->setSpeed(LIDAR_MANUAL_ZERO_SPEED);
 
     while(!reachedZero)
     {
@@ -161,4 +177,11 @@ int Lidar360::llGetDistanceAverage(int numberOfReadings)
     }
     sum = sum/numberOfReadings; // Divide the total by the number of readings to get the average
     return sum;
+}
+
+int Lidar360::angleToApproxSteps(int angle)
+{
+    int val = 0;
+    val = angle / (360/STEPS_PER_REVOLUTION);
+    return val;
 }

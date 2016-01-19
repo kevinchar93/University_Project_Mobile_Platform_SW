@@ -3,10 +3,10 @@
   Copyright (c) 2011-2012 Wayne Truchsess.  All right reserved.
   Rev 5.0 - January 24th, 2012
           - Removed the use of interrupts completely from the library
-            so TWI state changes are now polled. 
-          - Added calls to lockup() function in most functions 
-            to combat arbitration problems 
-          - Fixed scan() procedure which left timeouts enabled 
+            so TWI state changes are now polled.
+          - Added calls to lockup() function in most functions
+            to combat arbitration problems
+          - Fixed scan() procedure which left timeouts enabled
             and set to 80msec after exiting procedure
           - Changed scan() address range back to 0 - 0x7F
           - Removed all Wire legacy functions from library
@@ -16,7 +16,7 @@
           - Updated to make compatible with 8MHz clock frequency
   Rev 3.0 - January 9th, 2012
           - Modified library to be compatible with Arduino 1.0
-          - Changed argument type from boolean to uint8_t in pullUp(), 
+          - Changed argument type from boolean to uint8_t in pullUp(),
             setSpeed() and receiveByte() functions for 1.0 compatability
           - Modified return values for timeout feature to report
             back where in the transmission the timeout occured.
@@ -24,17 +24,17 @@
             attached to the I2C bus.  Similar to work done by Todbot
             and Nick Gammon
   Rev 2.0 - September 19th, 2011
-          - Added support for timeout function to prevent 
+          - Added support for timeout function to prevent
             and recover from bus lockup (thanks to PaulS
             and CrossRoads on the Arduino forum)
           - Changed return type for stop() from void to
-            uint8_t to handle timeOut function 
+            uint8_t to handle timeOut function
   Rev 1.0 - August 8th, 2011
-  
-  This is a modified version of the Arduino Wire/TWI 
+
+  This is a modified version of the Arduino Wire/TWI
   library.  Functions were rewritten to provide more functionality
   and also the use of Repeated Start.  Some I2C devices will not
-  function correctly without the use of a Repeated Start.  The 
+  function correctly without the use of a Repeated Start.  The
   initial version of this library only supports the Master.
 
 
@@ -96,7 +96,7 @@ void I2C::begin()
   cbi(TWSR, TWPS1);
   TWBR = ((F_CPU / 100000) - 16) / 2;
   // enable twi module and acks
-  TWCR = _BV(TWEN) | _BV(TWEA); 
+  TWCR = _BV(TWEN) | _BV(TWEA);
 }
 
 void I2C::end()
@@ -120,7 +120,7 @@ void I2C::setSpeed(uint8_t _fast)
     TWBR = ((F_CPU / 400000) - 16) / 2;
   }
 }
-  
+
 void I2C::pullup(uint8_t activate)
 {
   if(activate)
@@ -158,35 +158,35 @@ void I2C::scan()
   uint16_t tempTime = timeOutDelay;
   timeOut(80);
   uint8_t totalDevicesFound = 0;
-  Serial.println("Scanning for devices...please wait");
-  Serial.println();
+  // Serial.println("Scanning for devices...please wait");
+  // Serial.println();
   for(uint8_t s = 0; s <= 0x7F; s++)
   {
     returnStatus = 0;
     returnStatus = start();
     if(!returnStatus)
-    { 
+    {
       returnStatus = sendAddress(SLA_W(s));
     }
     if(returnStatus)
     {
       if(returnStatus == 1)
       {
-        Serial.println("There is a problem with the bus, could not complete scan");
+        // Serial.println("There is a problem with the bus, could not complete scan");
         timeOutDelay = tempTime;
         return;
       }
     }
     else
     {
-      Serial.print("Found device at address - ");
-      Serial.print(" 0x");
-      Serial.println(s,HEX);
+    //   Serial.print("Found device at address - ");
+    //   Serial.print(" 0x");
+    //   Serial.println(s,HEX);
       totalDevicesFound++;
     }
     stop();
   }
-  if(!totalDevicesFound){Serial.println("No devices found");}
+  if(!totalDevicesFound){/*Serial.println("No devices found");*/}
   timeOutDelay = tempTime;
 }
 
@@ -208,10 +208,10 @@ uint8_t I2C::receive()
   return(data[bufferIndex]);
 }
 
-  
-/*return values for new functions that use the timeOut feature 
+
+/*return values for new functions that use the timeOut feature
   will now return at what point in the transmission the timeout
-  occurred. Looking at a full communication sequence between a 
+  occurred. Looking at a full communication sequence between a
   master and slave (transmit data and then readback data) there
   a total of 7 points in the sequence where a timeout can occur.
   These are listed below and correspond to the returned value:
@@ -226,7 +226,7 @@ uint8_t I2C::receive()
   All possible return values:
   0           Function executed with no errors
   1 - 7       Timeout occurred, see above list
-  8 - 0xFF    See datasheet for exact meaning */ 
+  8 - 0xFF    See datasheet for exact meaning */
 
 
 /////////////////////////////////////////////////////
@@ -265,7 +265,7 @@ uint8_t I2C::write(int address, int registerAddress)
 uint8_t I2C::write(uint8_t address, uint8_t registerAddress, uint8_t data)
 {
   returnStatus = 0;
-  returnStatus = start(); 
+  returnStatus = start();
   if(returnStatus){return(returnStatus);}
   returnStatus = sendAddress(SLA_W(address));
   if(returnStatus)
@@ -573,7 +573,7 @@ uint8_t I2C::start()
       lockUp();
       return(1);
     }
-       
+
   }
   if ((TWI_STATUS == START) || (TWI_STATUS == REPEATED_START))
   {
@@ -601,7 +601,7 @@ uint8_t I2C::sendAddress(uint8_t i2cAddress)
       lockUp();
       return(1);
     }
-       
+
   }
   if ((TWI_STATUS == MT_SLA_ACK) || (TWI_STATUS == MR_SLA_ACK))
   {
@@ -617,7 +617,7 @@ uint8_t I2C::sendAddress(uint8_t i2cAddress)
   {
     lockUp();
     return(bufferedStatus);
-  } 
+  }
 }
 
 uint8_t I2C::sendByte(uint8_t i2cData)
@@ -633,7 +633,7 @@ uint8_t I2C::sendByte(uint8_t i2cData)
       lockUp();
       return(1);
     }
-       
+
   }
   if (TWI_STATUS == MT_DATA_ACK)
   {
@@ -649,7 +649,7 @@ uint8_t I2C::sendByte(uint8_t i2cData)
   {
     lockUp();
     return(bufferedStatus);
-  } 
+  }
 }
 
 uint8_t I2C::receiveByte(uint8_t ack)
@@ -679,7 +679,7 @@ uint8_t I2C::receiveByte(uint8_t ack)
     lockUp();
     return(bufferedStatus);
   }
-  return(TWI_STATUS); 
+  return(TWI_STATUS);
 }
 
 uint8_t I2C::stop()
@@ -694,7 +694,7 @@ uint8_t I2C::stop()
       lockUp();
       return(1);
     }
-       
+
   }
   return(0);
 }
@@ -702,8 +702,7 @@ uint8_t I2C::stop()
 void I2C::lockUp()
 {
   TWCR = 0; //releases SDA and SCL lines to high impedance
-  TWCR = _BV(TWEN) | _BV(TWEA); //reinitialize TWI 
+  TWCR = _BV(TWEN) | _BV(TWEA); //reinitialize TWI
 }
 
 I2C I2c = I2C();
-
