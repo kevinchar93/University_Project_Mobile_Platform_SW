@@ -1,0 +1,14 @@
+
+
+
+
+
+.build_ano/mega/src/main_mob_platform.cpp : src/main_mob_platform.ino
+	@mkdir -p .build_ano/mega/src
+	@echo [93msrc/main_mob_platform.ino[0m
+	@/usr/local/bin/ano preproc --source-dir src  -o $@ $^
+
+
+all : .build_ano/mega/src/main_mob_platform.cpp
+	@true
+

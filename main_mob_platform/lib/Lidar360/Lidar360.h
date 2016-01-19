@@ -8,7 +8,8 @@
 #define LIDAR_360_H
 
 #include <Arduino.h>
-#include <I2C.h>#include <AccelStepper.h>
+#include <I2C.h>
+#include <AccelStepper.h>
 #include "PinMap.h"
 
 #define STEPS_PER_REVOLUTION 560

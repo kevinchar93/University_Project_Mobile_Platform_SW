@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <RemoteComm.h>
 #include <MobilePlatformTypes.h>
 #include <MobilePlatformDefinitions.h>
@@ -5,6 +6,19 @@
 #include <AccelStepper.h>
 #include <MultiStepper.h>
 #include <Lidar360.h>
+void setup();
+void loop();
+bool verifyInstruction (Instruction instruct);
+void todo1 ();
+Instruction parseInstructionString (char* insStr);
+#line 1 "src/main_mob_platform.ino"
+//#include <RemoteComm.h>
+//#include <MobilePlatformTypes.h>
+//#include <MobilePlatformDefinitions.h>
+//#include <PinMap.h>
+//#include <AccelStepper.h>
+//#include <MultiStepper.h>
+//#include <Lidar360.h>
 
 
 RemoteComm robotComm(COMM_STATE_PIN, COMM_BUTTON_PIN, COMM_LED_PIN, COMM_BAUD_RATE);
@@ -149,4 +163,36 @@ void todo1 ()
         Serial.println("delay started");
     }
 
+}
+
+Instruction parseInstructionString (char* insStr)
+{
+    char* parserBuffer [PARSER_BUFFER_SIZE];
+    int type;
+    int val;
+    bool gridMode;
+
+    Instruction tempInstruction;
+
+    /* Split the instruction string into tokens we can parse */
+    for(int i = INSTRUCTION_FIELD_TYPE; i < INSTRUCTION_FIELD_MAX; i++)
+    {
+        parserBuffer[i] = strtok((i==0) ? insStr : NULL, ",;");
+    }
+
+    /* Convert values in the buffer to the correct datatype */
+    type = atoi(parserBuffer[INSTRUCTION_FIELD_TYPE]);
+
+    val = (parserBuffer[INSTRUCTION_FIELD_VALUE] == NULL) ?
+            0 : atoi(parserBuffer[INSTRUCTION_FIELD_VALUE]);
+
+    gridMode = (parserBuffer[INSTRUCTION_FIELD_GRID_MODE][0] == 'T' ) ?
+                true : false;
+
+    /* Put the extracted values into the instruction struct and return it */
+    tempInstruction.type = (INSTRUCTION_SET) type;
+    tempInstruction.value = val;
+    tempInstruction.gridMode = gridMode;
+
+    return tempInstruction;
 }
