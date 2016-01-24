@@ -23,6 +23,18 @@
 
 /* Lidar System pins */
 #define LIDAR_DIR 7   /* Direction pin for LIDAR (Z) stepper */
-#define LIDAR_STEP 4  /* Step pin for LIDAR (Z) stepper */
-#define LIDAR_BUTTON_A 25
-#define LIDAR_BUTTON_B 26
+#define LIDAR_STEP 12 /* Step pin for LIDAR (Z) stepper */
+#define LIDAR_SLEEP 5 /* Enable PIN for LIDAR (Z) stepper */
+#define LIDAR_BUTTON_A 18
+#define LIDAR_BUTTON_B 19
+
+/* LCD Screen pins */
+#define LCD_RS 48
+#define LCD_EN 49
+#define LCD_D4 50
+#define LCD_D5 51
+#define LCD_D6 52
+#define LCD_D7 53
+
+#define LCD_COLS 16
+#define LCD_ROWS 2

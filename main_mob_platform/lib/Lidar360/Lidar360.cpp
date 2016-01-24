@@ -1,11 +1,14 @@
 #include "Lidar360.h"
 
-Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, HardwareSerial  &print)
+Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, HardwareSerial  &print, LiquidCrystal &lcd)
 {
     _print = &print;
+    _lcd = &lcd;
+
     _motor = &mtr;
     _maxSpeed = maxSpeed;
     _motor->setMaxSpeed(_maxSpeed);
+
     _buttonA = btnA;
     _buttonB = btnB;
 
@@ -13,47 +16,93 @@ Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, Hardwa
     pinMode(_buttonA, INPUT_PULLUP);
     pinMode(_buttonB, INPUT_PULLUP);
 
+    //pinMode(LIDAR_SLEEP, OUTPUT);
+
     /*  need to set enble pin on the CNC board to low to run stepper drivers */
-    pinMode(CNC_BOARD_ENABLE_PIN, OUTPUT);
-    digitalWrite(CNC_BOARD_ENABLE_PIN, LOW);
+    // pinMode(LIDAR_EN, OUTPUT);
+
+    /* Init the lidar module it self */
+    initLidar();
+
+    /* Now Lidar module is up - check the output to see if we need a reset */
+    verifyLidarOutput();
 
     /* Finally wait for the Lidar to be set to the zero position */
     zeroStepperMotor();
 
-    /* Init the lidar module it self */
-    initLidar();
 }
 
 void Lidar360::testHarness()
 {
-    stepToPosition(560);
-    delay(2000);
-    stepToPosition(280);
-    delay(2000);
-    stepToPosition(140);
-    delay(2000);
-    stepToPosition(420);
-    delay(2000);
-    stepToPosition(0);
-    delay(2000);
+    // int angle = 0;
+    // int steps = 0;
+    // int timer = 3000;
+    //
+    // for (int i = 0; i <= 360; i+=45)
+    // {
+    //     angle = i;
+    //     steps = angleToApproxSteps(angle);
+    //     _lcd->clear();
+    //     _lcd->setCursor(0,0);
+    //     _lcd->print("Angle: ");
+    //     _lcd->print(angle);
+    //     _lcd->setCursor(0,1);
+    //     _lcd->print("Steps: ");
+    //     _lcd->print(steps);
+    //     stepToPosition(steps);
+    //     delay(timer);
+    // }
 }
 
-char* Lidar360::getDistanceAtHeading(int heading, char* responseBuffer)
+void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffSize)
 {
+    char tempBuff[10];
+    const int base = 10;
+
+    if(NULL != responseBuffer)
+    {
+        memset(responseBuffer, 0, buffSize);
+    }
+
     /* Convert the heaading to a nuber of steps to take */
-    uint16_t numSteps = angleToApproxSteps(heading);
+    int numSteps = angleToApproxSteps(heading);
 
     /* Spin the Lidar to the heaading */
-    stepToPosition(heading);
+    stepToPosition(numSteps);
 
-    /* Take a reading at that angle and store it */
-    uint16_t distanceRead = llGetDistanceAverage(NUM_READS_FOR_AVERAGE);
+    /* Take a distance reading at that angle and store it */
+    int distanceRead = llGetDistanceAverage(NUM_READS_FOR_AVERAGE);
 
+    if (NULL != responseBuffer)
+    {
+        memset(tempBuff, 0, sizeof(tempBuff));
+
+        // convert distance to string place it in the tempBuff, then cpy to responseBuffer
+        itoa(distanceRead, tempBuff, base);
+        strncpy(responseBuffer, tempBuff, strlen(tempBuff));
+
+        // append a seperator between the distance reading and steps taken
+        strncat(responseBuffer, ",", 1);
+        memset(tempBuff, 0, sizeof(tempBuff));
+
+        // append the number of steps taken to reach target heading
+        itoa(numSteps, tempBuff, base);
+        strncat(responseBuffer, tempBuff, strlen(tempBuff));
+
+        // append terminition character to the responseBuffer
+        strncat(responseBuffer,";" , 1);
+    }
 }
 
 void Lidar360::zeroStepperMotor()
 {
-    _print->println("Begin zeroStepperMotor");
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("Pls zero Lidar");
+    _lcd->setCursor(0,1);
+    _lcd->print("Then press A btn");
+
     bool reachedZero = false;
 
     _motor->setSpeed(LIDAR_MANUAL_ZERO_SPEED);
@@ -73,7 +122,12 @@ void Lidar360::zeroStepperMotor()
             reachedZero = true;
         }
     }
-    _print->println("End zeroStepperMotor");
+
+    /* Show message to signal end of lidar zeroing */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("Zero positon set");
+    delay(3000);
 }
 
 void Lidar360::stepToPosition(long pos)
@@ -99,6 +153,15 @@ void Lidar360::stepToPosition(long pos)
         }
     }
 }
+void Lidar360::powerDownMotor()
+{
+
+}
+
+void Lidar360::powerUpMotor()
+{
+
+}
 
 void Lidar360::initLidar()
 {
@@ -115,7 +178,55 @@ void Lidar360::initLidar()
     llWriteAndWait(0x00, 0x00);
 }
 
+void Lidar360::verifyLidarOutput()
+{
+    bool keepLooping = true;
+    bool flipFlag = false;
+    unsigned long currTime = 0;
+    unsigned long prevTime = 0;
+    const int interval = 2000;
+
+    _lcd->clear();
+    _lcd->setCursor(0,1);
+    _lcd->print("Dist: ");
+    while(keepLooping)
+    {
+        /* Print the first message on the top line  - switch it every time interval expires */
+        currTime = millis();
+        if((currTime - prevTime) > interval)
+        {
+            prevTime = currTime;
+            _lcd->setCursor(0,0);
+            (false == flipFlag) ? _lcd->print("Check lidar data") : _lcd->print("Press A to cont ");
+            flipFlag = !flipFlag;
+        }
+
+        /* Print the measurement and wait for user button press */
+        _lcd->setCursor(6,1);
+        _lcd->print(llGetDistanceAverage(3));
+
+        /* If button A is pressed, move on to zeroing the lidar */
+        if (digitalRead(_buttonA) == LOW)
+        {
+            keepLooping = false;
+        }
+    }
+
+    /* Delay to allow user to remove finger from button */
+    delay(1000);
+}
+
 void Lidar360::setLidarOffSet(int offSet)
+{
+
+}
+
+void Lidar360::powerDownLidar()
+{
+
+}
+
+void Lidar360::powerUpLidar()
 {
 
 }
@@ -182,6 +293,7 @@ int Lidar360::llGetDistanceAverage(int numberOfReadings)
 int Lidar360::angleToApproxSteps(int angle)
 {
     int val = 0;
-    val = angle / (360/STEPS_PER_REVOLUTION);
+    float tempAngle = angle;
+    val = tempAngle / (360.0/STEPS_PER_REVOLUTION);
     return val;
 }

@@ -10,37 +10,45 @@
 #include <Arduino.h>
 #include <I2C.h>
 #include <AccelStepper.h>
+#include <LiquidCrystal.h>
 #include "PinMap.h"
 
-#define STEPS_PER_REVOLUTION 560
+#define STEPS_PER_REVOLUTION 700.0
 
 #define NUM_READS_FOR_AVERAGE 3
 #define LIDAR_LITE_ADDRESS 0x62
 
-#define LIDAR_MANUAL_ZERO_SPEED 50.0
+#define LIDAR_MAX_SPEED 550
+#define LIDAR_MANUAL_ZERO_SPEED 20.0
 
 /* Define number of steps to reach these common angles */
 #define LIDAR_0_DEGREES 0
-#define LIDAR_45_DEGREES 70
-#define LIDAR_90_DEGREES 140
-#define LIDAR_135_DEGREES 210
-#define LIDAR_180_DEGREES 280
-#define LIDAR_225_DEGREES 350
-#define LIDAR_270_DEGREES 420
-#define LIDAR_315_DEGREES 490
+#define LIDAR_45_DEGREES 88
+#define LIDAR_90_DEGREES 175
+#define LIDAR_135_DEGREES 263
+#define LIDAR_180_DEGREES 350
+#define LIDAR_225_DEGREES 438
+#define LIDAR_270_DEGREES 525
+#define LIDAR_315_DEGREES 613
+#define LIDAR_360_DEGREES 700
 
 class Lidar360
 {
     public:
-        Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, HardwareSerial  &print);
+        Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, HardwareSerial  &print, LiquidCrystal &lcd);
         void    testHarness();
-        char*   getDistanceAtHeading(int heading, char* responseBuffer);
+        void    getDistanceAtHeading(int heading, char* responseBuffer, int buffSize);
 
     private:
         void    zeroStepperMotor();
         void    stepToPosition(long pos);
+        void    powerDownMotor();
+        void    powerUpMotor();
 
         void    initLidar();
+        void    verifyLidarOutput();
+        void    powerDownLidar();
+        void    powerUpLidar();
         void    setLidarOffSet(int offSet);
         void    llWriteAndWait(char myAddress, char myValue);
         byte    llReadAndWait(char myAddress, int numOfBytes, byte arrayToSave[2]);
@@ -49,16 +57,18 @@ class Lidar360
 
         int     angleToApproxSteps(int angle);
 
-        int _buttonA;
-        int _buttonB;
-        int _motorDir;
-        int _motorStep;
+        int     _buttonA;
+        int     _buttonB;
+        int     _motorDir;
+        int     _motorStep;
 
-        float _maxSpeed;
+        float   _maxSpeed;
 
-        long _motorPosition;
+        long    _motorPosition;
 
         AccelStepper* _motor;
         HardwareSerial* _print;
+        LiquidCrystal* _lcd;
+
 };
 #endif
