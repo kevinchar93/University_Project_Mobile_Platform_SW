@@ -9,6 +9,7 @@
 
 #include <Arduino.h>
 #include <I2C.h>
+#include <math.h>
 #include <AccelStepper.h>
 #include <LiquidCrystal.h>
 #include "PinMap.h"
@@ -55,7 +56,7 @@ class Lidar360
         int     llGetDistance();
         int     llGetDistanceAverage(int numberOfReadings);
 
-        int     angleToApproxSteps(int angle);
+        long     angleToApproxSteps(int angle);
 
         int     _buttonA;
         int     _buttonB;

@@ -204,6 +204,7 @@ void Lidar360::verifyLidarOutput()
         /* Print the measurement and wait for user button press */
         _lcd->setCursor(6,1);
         _lcd->print(llGetDistanceAverage(3));
+        _lcd->print("   ");
 
         /* If button A is pressed, move on to zeroing the lidar */
         if (digitalRead(_buttonA) == LOW)
@@ -289,11 +290,8 @@ int Lidar360::llGetDistanceAverage(int numberOfReadings)
     sum = sum/numberOfReadings; // Divide the total by the number of readings to get the average
     return sum;
 }
-
-int Lidar360::angleToApproxSteps(int angle)
+/* Conver a given angle to the number of steps to take from zero to reach siad angle */
+long Lidar360::angleToApproxSteps(int angle)
 {
-    int val = 0;
-    float tempAngle = angle;
-    val = tempAngle / (360.0/STEPS_PER_REVOLUTION);
-    return val;
+    return lroundf((angle * STEPS_PER_REVOLUTION) / 360);
 }
