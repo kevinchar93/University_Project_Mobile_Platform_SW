@@ -22,9 +22,9 @@
 #define RIGHT_STEP 3  /* Step pin for right (Y) stepper */
 
 /* Lidar System pins */
-#define LIDAR_DIR 7   /* Direction pin for LIDAR (Z) stepper */
+#define LIDAR_DIR 13   /* Direction pin for LIDAR (Z) stepper */
 #define LIDAR_STEP 12 /* Step pin for LIDAR (Z) stepper */
-#define LIDAR_SLEEP 5 /* Enable PIN for LIDAR (Z) stepper */
+#define LIDAR_SLEEP 11 /* Enable PIN for LIDAR (Z) stepper */
 #define LIDAR_BUTTON_A 18
 #define LIDAR_BUTTON_B 19
 

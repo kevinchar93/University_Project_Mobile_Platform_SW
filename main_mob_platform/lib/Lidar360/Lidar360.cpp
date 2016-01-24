@@ -1,6 +1,6 @@
 #include "Lidar360.h"
 
-Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, HardwareSerial  &print, LiquidCrystal &lcd)
+Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, int sleepPin, HardwareSerial  &print, LiquidCrystal &lcd)
 {
     _print = &print;
     _lcd = &lcd;
@@ -12,14 +12,17 @@ Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, Hardwa
     _buttonA = btnA;
     _buttonB = btnB;
 
+    _motorSleep = sleepPin;
+
     /* Set the buttons to input mode with a pullup resistor */
     pinMode(_buttonA, INPUT_PULLUP);
     pinMode(_buttonB, INPUT_PULLUP);
 
-    //pinMode(LIDAR_SLEEP, OUTPUT);
+    /* Set up the sleep pin for sending output */
+    pinMode(_motorSleep, OUTPUT);
 
-    /*  need to set enble pin on the CNC board to low to run stepper drivers */
-    // pinMode(LIDAR_EN, OUTPUT);
+    /* Power down the motor to save power */
+    powerDownMotor();
 
     /* Init the lidar module it self */
     initLidar();
@@ -103,6 +106,9 @@ void Lidar360::zeroStepperMotor()
     _lcd->setCursor(0,1);
     _lcd->print("Then press A btn");
 
+    /* Power up the motor before moving */
+    powerUpMotor();
+
     bool reachedZero = false;
 
     _motor->setSpeed(LIDAR_MANUAL_ZERO_SPEED);
@@ -127,6 +133,9 @@ void Lidar360::zeroStepperMotor()
     _lcd->clear();
     _lcd->setCursor(0,0);
     _lcd->print("Zero positon set");
+
+    /* Power down the motor now we have finished zeroing */
+    powerDownMotor();
     delay(3000);
 }
 
@@ -155,12 +164,16 @@ void Lidar360::stepToPosition(long pos)
 }
 void Lidar360::powerDownMotor()
 {
-
+    /* Set sleep pin to LOW to sleep motor */
+    digitalWrite(_motorSleep, LOW);
+    delay(LIDAR_MOTOR_POWER_DELAY);
 }
 
 void Lidar360::powerUpMotor()
 {
-
+    /* Set sleep pin to HIGH to wake motor */
+    digitalWrite(_motorSleep, HIGH);
+    delay(LIDAR_MOTOR_POWER_DELAY);
 }
 
 void Lidar360::initLidar()
@@ -290,6 +303,7 @@ int Lidar360::llGetDistanceAverage(int numberOfReadings)
     sum = sum/numberOfReadings; // Divide the total by the number of readings to get the average
     return sum;
 }
+
 /* Conver a given angle to the number of steps to take from zero to reach siad angle */
 long Lidar360::angleToApproxSteps(int angle)
 {

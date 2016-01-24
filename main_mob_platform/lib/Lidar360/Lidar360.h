@@ -12,7 +12,6 @@
 #include <math.h>
 #include <AccelStepper.h>
 #include <LiquidCrystal.h>
-#include "PinMap.h"
 
 #define STEPS_PER_REVOLUTION 700.0
 
@@ -21,6 +20,8 @@
 
 #define LIDAR_MAX_SPEED 550
 #define LIDAR_MANUAL_ZERO_SPEED 20.0
+
+#define LIDAR_MOTOR_POWER_DELAY 10
 
 /* Define number of steps to reach these common angles */
 #define LIDAR_0_DEGREES 0
@@ -36,7 +37,7 @@
 class Lidar360
 {
     public:
-        Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, HardwareSerial  &print, LiquidCrystal &lcd);
+        Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, int sleepPin, HardwareSerial  &print, LiquidCrystal &lcd);
         void    testHarness();
         void    getDistanceAtHeading(int heading, char* responseBuffer, int buffSize);
 
@@ -60,8 +61,10 @@ class Lidar360
 
         int     _buttonA;
         int     _buttonB;
+
         int     _motorDir;
         int     _motorStep;
+        int     _motorSleep;
 
         float   _maxSpeed;
 

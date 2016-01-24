@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <math.h>
 #include "RemoteComm.h"
 #include "MobilePlatformTypes.h"
 #include "MobilePlatformDefinitions.h"
