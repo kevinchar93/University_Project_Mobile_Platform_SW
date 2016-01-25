@@ -1,6 +1,6 @@
 #include "Lidar360.h"
 
-Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, int sleepPin, HardwareSerial  &print, LiquidCrystal &lcd)
+Lidar360::Lidar360(float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr, HardwareSerial  &print, LiquidCrystal &lcd)
 {
     _print = &print;
     _lcd = &lcd;
@@ -12,14 +12,16 @@ Lidar360::Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, int sl
     _buttonA = btnA;
     _buttonB = btnB;
 
-    _motorSleep = sleepPin;
+    _motorSleep = motorSleep;
+    _lidarModuleEn = lidarEn;
 
     /* Set the buttons to input mode with a pullup resistor */
     pinMode(_buttonA, INPUT_PULLUP);
     pinMode(_buttonB, INPUT_PULLUP);
 
-    /* Set up the sleep pin for sending output */
+    /* Set up the motorSleep and lidarEn pin for sending output */
     pinMode(_motorSleep, OUTPUT);
+    pinMode(_lidarModuleEn, OUTPUT);
 
     /* Power down the motor to save power */
     powerDownMotor();
@@ -166,7 +168,6 @@ void Lidar360::powerDownMotor()
 {
     /* Set sleep pin to LOW to sleep motor */
     digitalWrite(_motorSleep, LOW);
-    delay(LIDAR_MOTOR_POWER_DELAY);
 }
 
 void Lidar360::powerUpMotor()
@@ -178,17 +179,22 @@ void Lidar360::powerUpMotor()
 
 void Lidar360::initLidar()
 {
+    /* First power up the module by pulling enable pin HIGH */
+    digitalWrite(_lidarModuleEn, HIGH);
+
     // Opens & joins the irc bus as master
     I2c.begin();
 
     // Waits to make sure everything is powered up before sending or receiving data
-    delay(100);
+    delay(LIDAR_MODULE_POWER_DELAY);
 
     // Sets a timeout to ensure no locking up of sketch if I2C communication fails
     I2c.timeOut(50);
 
      // reset device to defaults for distance measurment
     llWriteAndWait(0x00, 0x00);
+
+    powerDownLidar();
 }
 
 void Lidar360::verifyLidarOutput()
@@ -198,6 +204,8 @@ void Lidar360::verifyLidarOutput()
     unsigned long currTime = 0;
     unsigned long prevTime = 0;
     const int interval = 2000;
+
+    powerUpLidar();
 
     _lcd->clear();
     _lcd->setCursor(0,1);
@@ -226,8 +234,13 @@ void Lidar360::verifyLidarOutput()
         }
     }
 
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("Btn Pressed!");
+    powerDownLidar();
+
     /* Delay to allow user to remove finger from button */
-    delay(1000);
+    delay(LIDAR_BUTTON_PRESS_DELAY);
 }
 
 void Lidar360::setLidarOffSet(int offSet)
@@ -237,12 +250,18 @@ void Lidar360::setLidarOffSet(int offSet)
 
 void Lidar360::powerDownLidar()
 {
-
+    /* Power down the module by pulling enable pin LOW */
+    digitalWrite(_lidarModuleEn, LOW);
 }
 
 void Lidar360::powerUpLidar()
 {
+    /* Power up the module by pulling enable pin HIGH */
+    digitalWrite(_lidarModuleEn, HIGH);
 
+    /* Wait for device power up, then reset device to defaults */
+    delay(LIDAR_MODULE_POWER_DELAY);
+    llWriteAndWait(0x00, 0x00);
 }
 
 // Write a register and wait until it responds with success

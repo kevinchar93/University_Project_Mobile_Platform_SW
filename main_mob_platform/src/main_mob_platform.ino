@@ -17,7 +17,7 @@ bool insErrorOccurred;
 
 char lidarDataBuffer [LIDAR_DATA_BUFFER_SIZE];
 
-AccelStepper lidar(AccelStepper::DRIVER, LIDAR_STEP, LIDAR_DIR);
+AccelStepper lidarStep(AccelStepper::DRIVER, LIDAR_STEP, LIDAR_DIR);
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 void setup()
@@ -41,25 +41,27 @@ void setup()
     const int timeDelay = 1000;
     char measureBuff[10];
 
-    Lidar360 lidar360(lidar, LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, Serial, lcd);
+    Lidar360 lidar360(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP,
+                      LIDAR_MODULE_EN, lidarStep, Serial, lcd);
+
 
 
     while (true)
     {
-        // lidar360.testHarness();
+        lidar360.testHarness();
 
-        for (int i = 0; i <= 360; i+=45)
-        {
-            lidar360.getDistanceAtHeading(i, measureBuff, bSize);
-            lcd.clear();
-            lcd.setCursor(0,0);
-            lcd.print("Heading: ");
-            lcd.print(i);
-            lcd.setCursor(0,1);
-            lcd.print("Read: ");
-            lcd.print(measureBuff);
-            delay(timeDelay);
-        }
+        // for (int i = 0; i <= 360; i+=45)
+        // {
+        //     lidar360.getDistanceAtHeading(i, measureBuff, bSize);
+        //     lcd.clear();
+        //     lcd.setCursor(0,0);
+        //     lcd.print("Heading: ");
+        //     lcd.print(i);
+        //     lcd.setCursor(0,1);
+        //     lcd.print("Read: ");
+        //     lcd.print(measureBuff);
+        //     delay(timeDelay);
+        // }
 
     }
 }

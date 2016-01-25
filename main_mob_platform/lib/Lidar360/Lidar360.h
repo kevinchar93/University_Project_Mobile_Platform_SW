@@ -21,7 +21,10 @@
 #define LIDAR_MAX_SPEED 550
 #define LIDAR_MANUAL_ZERO_SPEED 20.0
 
-#define LIDAR_MOTOR_POWER_DELAY 10
+#define LIDAR_MOTOR_POWER_DELAY 5
+#define LIDAR_MODULE_POWER_DELAY 100
+
+#define LIDAR_BUTTON_PRESS_DELAY 1000
 
 /* Define number of steps to reach these common angles */
 #define LIDAR_0_DEGREES 0
@@ -37,7 +40,7 @@
 class Lidar360
 {
     public:
-        Lidar360(AccelStepper &mtr, float maxSpeed, int btnA, int btnB, int sleepPin, HardwareSerial  &print, LiquidCrystal &lcd);
+        Lidar360 (float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr, HardwareSerial  &print, LiquidCrystal &lcd);
         void    testHarness();
         void    getDistanceAtHeading(int heading, char* responseBuffer, int buffSize);
 
@@ -52,6 +55,7 @@ class Lidar360
         void    powerDownLidar();
         void    powerUpLidar();
         void    setLidarOffSet(int offSet);
+
         void    llWriteAndWait(char myAddress, char myValue);
         byte    llReadAndWait(char myAddress, int numOfBytes, byte arrayToSave[2]);
         int     llGetDistance();
@@ -65,6 +69,8 @@ class Lidar360
         int     _motorDir;
         int     _motorStep;
         int     _motorSleep;
+
+        int     _lidarModuleEn;
 
         float   _maxSpeed;
 
