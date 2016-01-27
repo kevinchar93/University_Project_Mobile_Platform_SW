@@ -19,7 +19,7 @@
 #define LIDAR_LITE_ADDRESS 0x62
 
 #define LIDAR_MAX_SPEED 550
-#define LIDAR_MANUAL_ZERO_SPEED 20.0
+#define LIDAR_MANUAL_ZERO_SPEED 10.0
 
 #define LIDAR_MOTOR_POWER_DELAY 5
 #define LIDAR_MODULE_POWER_DELAY 100
@@ -45,8 +45,11 @@ class Lidar360
         void    getDistanceAtHeading(int heading, char* responseBuffer, int buffSize);
 
     private:
+        void    performSweepScan(int sampleInterval);
+
         void    zeroStepperMotor();
-        void    stepToPosition(long pos);
+        void    stepToRelativePosition(long steps);
+        void    stepToZeroPosition();
         void    powerDownMotor();
         void    powerUpMotor();
 
@@ -62,6 +65,7 @@ class Lidar360
         int     llGetDistanceAverage(int numberOfReadings);
 
         long     angleToApproxSteps(int angle);
+        float    stepsToApproxAngle(int stepPos);
 
         int     _buttonA;
         int     _buttonB;
@@ -73,8 +77,6 @@ class Lidar360
         int     _lidarModuleEn;
 
         float   _maxSpeed;
-
-        long    _motorPosition;
 
         AccelStepper* _motor;
         HardwareSerial* _print;

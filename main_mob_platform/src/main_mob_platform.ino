@@ -22,7 +22,7 @@ LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
     lcd.begin(LCD_COLS, LCD_ROWS);
 
     /* Initialise intruction buffer and elements needed to work with it */
@@ -44,11 +44,12 @@ void setup()
     Lidar360 lidar360(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP,
                       LIDAR_MODULE_EN, lidarStep, Serial, lcd);
 
-
+    int spinCnt = 0;
 
     while (true)
     {
-        lidar360.testHarness();
+        // lidar360.testHarness();
+        // spinCnt++;
 
         // for (int i = 0; i <= 360; i+=45)
         // {
@@ -58,7 +59,7 @@ void setup()
         //     lcd.print("Heading: ");
         //     lcd.print(i);
         //     lcd.setCursor(0,1);
-        //     lcd.print("Read: ");
+        //     lcd.print("Read:");
         //     lcd.print(measureBuff);
         //     delay(timeDelay);
         // }

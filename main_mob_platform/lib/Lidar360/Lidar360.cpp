@@ -34,29 +34,11 @@ Lidar360::Lidar360(float maxSpeed, int btnA, int btnB, int motorSleep, int lidar
 
     /* Finally wait for the Lidar to be set to the zero position */
     zeroStepperMotor();
-
 }
 
 void Lidar360::testHarness()
 {
-    // int angle = 0;
-    // int steps = 0;
-    // int timer = 3000;
-    //
-    // for (int i = 0; i <= 360; i+=45)
-    // {
-    //     angle = i;
-    //     steps = angleToApproxSteps(angle);
-    //     _lcd->clear();
-    //     _lcd->setCursor(0,0);
-    //     _lcd->print("Angle: ");
-    //     _lcd->print(angle);
-    //     _lcd->setCursor(0,1);
-    //     _lcd->print("Steps: ");
-    //     _lcd->print(steps);
-    //     stepToPosition(steps);
-    //     delay(timer);
-    // }
+
 }
 
 void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffSize)
@@ -72,11 +54,14 @@ void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffS
     /* Convert the heaading to a nuber of steps to take */
     int numSteps = angleToApproxSteps(heading);
 
-    /* Spin the Lidar to the heaading */
-    stepToPosition(numSteps);
+    /* Spin the Lidar to the heading */
+    powerUpMotor();
+    stepToRelativePosition(numSteps);
 
     /* Take a distance reading at that angle and store it */
+    powerUpLidar();
     int distanceRead = llGetDistanceAverage(NUM_READS_FOR_AVERAGE);
+    powerDownLidar();
 
     if (NULL != responseBuffer)
     {
@@ -97,6 +82,78 @@ void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffS
         // append terminition character to the responseBuffer
         strncat(responseBuffer,";" , 1);
     }
+
+    /* Return the motor to the zero position */
+    stepToZeroPosition();
+    powerDownMotor();
+}
+
+void Lidar360::performSweepScan(int sampleInterval)
+{
+    const int readEvery = sampleInterval;
+    const int numberOfReadings = 2;
+    bool reachedTarget = false;
+
+    const int stepsPerRev = STEPS_PER_REVOLUTION;
+    const int stepSpeed = _maxSpeed;
+
+    int readingAngle = 0;
+    int reading = 0;
+    long currPos = 0;
+
+    // Power up the devices
+    powerUpLidar();
+    powerUpMotor();
+
+    // Begin sweep at the zero position
+    stepToZeroPosition();
+
+    // Prepare the display
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DO:Sweep Scan");
+
+    while (true)
+    {
+        // if (_motor->currentPosition() == stepsPerRev)
+        // {
+            _motor->setCurrentPosition(0);
+            _motor->move(stepsPerRev);
+            _motor->setSpeed(stepSpeed);
+            reachedTarget = false;
+        // }
+
+        while(!reachedTarget)
+        {
+            currPos = _motor->currentPosition();
+            if(_motor->targetPosition() != currPos)
+            {
+                _motor->runSpeedToPosition();
+                currPos++;
+            }
+            else
+            {
+                reachedTarget = true;
+            }
+
+            /* Take a reading on the step interval specified by readEvery */
+            if (0 == (currPos % readEvery))
+            {
+                reading = llGetDistance();
+                readingAngle = stepsToApproxAngle(currPos);
+                // _lcd->setCursor(2,0);
+                // _lcd->print(reading);
+                // _lcd->setCursor(2,1);
+                // _lcd->print(readingAngle);
+                _print->print("R:");_print->print(reading);
+                _print->print("   A:");_print->println(readingAngle);
+            }
+        }
+
+        delay(1000);
+    }
+
+    _lcd->print("DONE:Sweep Scan");
 }
 
 void Lidar360::zeroStepperMotor()
@@ -125,8 +182,7 @@ void Lidar360::zeroStepperMotor()
         /* If button A is pressed ,the Lidar has been zeroed */
         else if (digitalRead(_buttonA) == LOW)
         {
-            _motorPosition = 0;
-            _motor->setCurrentPosition(_motorPosition);
+            _motor->setCurrentPosition(0);
             reachedZero = true;
         }
     }
@@ -138,25 +194,26 @@ void Lidar360::zeroStepperMotor()
 
     /* Power down the motor now we have finished zeroing */
     powerDownMotor();
-    delay(3000);
+    delay(LIDAR_BUTTON_PRESS_DELAY);
 }
 
-void Lidar360::stepToPosition(long pos)
+void Lidar360::stepToRelativePosition(long steps)
 {
     bool reachedTarget = false;
+    const int stepsPerRev = STEPS_PER_REVOLUTION;
+    const int stepSpeed = _maxSpeed;
 
-    if (pos > STEPS_PER_REVOLUTION)
-        return;
+    /* Modulo to wrap the number steps to set in stepsPerRev */
+    steps %= stepsPerRev;
 
-    _motor->moveTo(pos);
-    _motor->setSpeed(_maxSpeed);
-    _motor->runSpeedToPosition();
+    _motor->move(steps);
+    _motor->setSpeed(stepSpeed);
 
     while(!reachedTarget)
     {
         if(_motor->targetPosition() != _motor->currentPosition())
         {
-            _motor->runSpeed();
+            _motor->runSpeedToPosition();
         }
         else
         {
@@ -164,6 +221,38 @@ void Lidar360::stepToPosition(long pos)
         }
     }
 }
+
+void Lidar360::stepToZeroPosition ()
+{
+    bool reachedZeroPosition = false;
+    const int stepsPerRev = STEPS_PER_REVOLUTION;
+    const int stepSpeed = _maxSpeed;
+
+    // Wrap the current position to 0 - 700 using modulo
+    int pos = (_motor->currentPosition() % stepsPerRev);
+
+    // Subtract the wrapper position (modulo to handle case when pos == 700)
+    // to find out how many steps to reach the zero pos
+    int remain = (stepsPerRev - pos) % stepsPerRev;
+
+    // Return to zero positon
+    _motor->move(remain);
+    _motor->setSpeed(stepSpeed);
+
+    while(!reachedZeroPosition)
+    {
+        if(_motor->targetPosition() != _motor->currentPosition())
+        {
+            _motor->runSpeedToPosition();
+        }
+        else
+        {
+            reachedZeroPosition = true;
+        }
+    }
+    _motor->setCurrentPosition(0);
+}
+
 void Lidar360::powerDownMotor()
 {
     /* Set sleep pin to LOW to sleep motor */
@@ -323,8 +412,14 @@ int Lidar360::llGetDistanceAverage(int numberOfReadings)
     return sum;
 }
 
-/* Conver a given angle to the number of steps to take from zero to reach siad angle */
+/* Convert a given angle to the number of steps to take from zero to reach siad angle */
 long Lidar360::angleToApproxSteps(int angle)
 {
     return lroundf((angle * STEPS_PER_REVOLUTION) / 360);
+}
+
+/* Convert the current position of the motor to an angular representation within 0 - 360 */
+float Lidar360::stepsToApproxAngle(int stepPos)
+{
+    return (float(stepPos) / STEPS_PER_REVOLUTION) * 360.0;
 }
