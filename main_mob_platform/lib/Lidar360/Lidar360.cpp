@@ -26,6 +26,9 @@ Lidar360::Lidar360(float maxSpeed, int btnA, int btnB, int motorSleep, int lidar
     /* Power down the motor to save power */
     powerDownMotor();
 
+    /* Init the number of readings in the array readings */
+    _numSweepReadings = 0;
+
     /* Init the lidar module it self */
     initLidar();
 
@@ -38,7 +41,14 @@ Lidar360::Lidar360(float maxSpeed, int btnA, int btnB, int motorSleep, int lidar
 
 void Lidar360::testHarness()
 {
+    performSweepScan(10, 3);
 
+    for (int i = 0; i < _numSweepReadings; i++)
+    {
+        _print->print("Num: "); _print->print(i);
+        _print->print(" Heading: "); _print->print(sweepReadings[i].heading);
+        _print->print(" Dist: "); _print->println(sweepReadings[i].distance);
+    }
 }
 
 void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffSize)
@@ -88,20 +98,15 @@ void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffS
     powerDownMotor();
 }
 
-void Lidar360::performSweepScan(int sampleInterval)
+void Lidar360::performSweepScan(const int sampleInterval, const int numReadingsToTake)
 {
-    const int readEvery = sampleInterval;
-    const int numberOfReadings = 2;
     bool reachedTarget = false;
-
-    const int stepsPerRev = STEPS_PER_REVOLUTION;
-    const int stepSpeed = _maxSpeed;
-
-    int readingAngle = 0;
-    int reading = 0;
     long currPos = 0;
 
-    // Power up the devices
+    // Reset the number of sweep readings to zero as we are taking a new sweep
+    _numSweepReadings = 0;
+
+    // Power up the motor and the lidar module
     powerUpLidar();
     powerUpMotor();
 
@@ -113,46 +118,37 @@ void Lidar360::performSweepScan(int sampleInterval)
     _lcd->setCursor(0,0);
     _lcd->print("DO:Sweep Scan");
 
-    while (true)
+    _motor->move(STEPS_PER_REVOLUTION);
+    _motor->setSpeed(_maxSpeed);
+
+    while(!reachedTarget)
     {
-        // if (_motor->currentPosition() == stepsPerRev)
-        // {
-            _motor->setCurrentPosition(0);
-            _motor->move(stepsPerRev);
-            _motor->setSpeed(stepSpeed);
-            reachedTarget = false;
-        // }
-
-        while(!reachedTarget)
+        if(_motor->targetPosition() != _motor->currentPosition())
         {
-            currPos = _motor->currentPosition();
-            if(_motor->targetPosition() != currPos)
-            {
-                _motor->runSpeedToPosition();
-                currPos++;
-            }
-            else
-            {
-                reachedTarget = true;
-            }
-
-            /* Take a reading on the step interval specified by readEvery */
-            if (0 == (currPos % readEvery))
-            {
-                reading = llGetDistance();
-                readingAngle = stepsToApproxAngle(currPos);
-                // _lcd->setCursor(2,0);
-                // _lcd->print(reading);
-                // _lcd->setCursor(2,1);
-                // _lcd->print(readingAngle);
-                _print->print("R:");_print->print(reading);
-                _print->print("   A:");_print->println(readingAngle);
-            }
+            _motor->runSpeedToPosition();
+        }
+        else
+        {
+            reachedTarget = true;
         }
 
-        delay(1000);
+        /* Take a reading on the step interval specified by sampleInterval */
+        currPos = _motor->currentPosition();
+        if (0 == (currPos % sampleInterval))
+        {
+            /* We store the reading and heading of the reading */
+            sweepReadings[_numSweepReadings].distance = llGetDistanceAverage(numReadingsToTake);
+            sweepReadings[_numSweepReadings].heading = stepsToApproxAngle(currPos);
+            _numSweepReadings++;
+        }
     }
 
+    // Power down the motor and the lidar modules
+    powerDownMotor();
+    powerDownLidar();
+
+    _lcd->clear();
+    _lcd->setCursor(0,0);
     _lcd->print("DONE:Sweep Scan");
 }
 

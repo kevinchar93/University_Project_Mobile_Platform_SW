@@ -44,26 +44,13 @@ void setup()
     Lidar360 lidar360(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP,
                       LIDAR_MODULE_EN, lidarStep, Serial, lcd);
 
-    int spinCnt = 0;
 
     while (true)
     {
-        // lidar360.testHarness();
-        // spinCnt++;
+        lidar360.testHarness();
 
-        // for (int i = 0; i <= 360; i+=45)
-        // {
-        //     lidar360.getDistanceAtHeading(i, measureBuff, bSize);
-        //     lcd.clear();
-        //     lcd.setCursor(0,0);
-        //     lcd.print("Heading: ");
-        //     lcd.print(i);
-        //     lcd.setCursor(0,1);
-        //     lcd.print("Read:");
-        //     lcd.print(measureBuff);
-        //     delay(timeDelay);
-        // }
-
+        // delay 2 mins
+        delay(2 * 60000);
     }
 }
 

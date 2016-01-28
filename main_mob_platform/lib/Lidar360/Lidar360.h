@@ -26,6 +26,8 @@
 
 #define LIDAR_BUTTON_PRESS_DELAY 1000
 
+#define LIDAR_MAX_VECTOR_ARRAY_SIZE 360 // defines the max ammount of LidarVecs that will be held in the class array
+
 /* Define number of steps to reach these common angles */
 #define LIDAR_0_DEGREES 0
 #define LIDAR_45_DEGREES 88
@@ -45,7 +47,7 @@ class Lidar360
         void    getDistanceAtHeading(int heading, char* responseBuffer, int buffSize);
 
     private:
-        void    performSweepScan(int sampleInterval);
+        void    performSweepScan(const int sampleInterval, const int numReadingsToTake);
 
         void    zeroStepperMotor();
         void    stepToRelativePosition(long steps);
@@ -66,6 +68,15 @@ class Lidar360
 
         long     angleToApproxSteps(int angle);
         float    stepsToApproxAngle(int stepPos);
+
+        typedef struct _lidarVector
+        {
+            int distance;
+            float heading;
+        } LidarVec;
+
+        LidarVec sweepReadings[LIDAR_MAX_VECTOR_ARRAY_SIZE];
+        int      _numSweepReadings;
 
         int     _buttonA;
         int     _buttonB;
