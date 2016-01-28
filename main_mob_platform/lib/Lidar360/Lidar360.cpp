@@ -41,14 +41,23 @@ Lidar360::Lidar360(float maxSpeed, int btnA, int btnB, int motorSleep, int lidar
 
 void Lidar360::testHarness()
 {
-    performSweepScan(10, 3);
+    char str[3961];
+    performSweepScan(2, 2);
 
     for (int i = 0; i < _numSweepReadings; i++)
     {
-        _print->print("Num: "); _print->print(i);
-        _print->print(" Heading: "); _print->print(sweepReadings[i].heading);
-        _print->print(" Dist: "); _print->println(sweepReadings[i].distance);
+        _print->print(i);
+        _print->print("         Dist: "); _print->print(_sweepReadings[i].distance);
+        _print->print(" Head: "); _print->println(_sweepReadings[i].heading);
     }
+
+    createSweepString(str, sizeof(str));
+
+    _print->println("Generated line:");
+    _print->println(str);
+    _print->println("Strlen:");
+    _print->println(strlen(str));
+
 }
 
 void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffSize)
@@ -98,10 +107,17 @@ void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffS
     powerDownMotor();
 }
 
-void Lidar360::performSweepScan(const int sampleInterval, const int numReadingsToTake)
+void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int numReadingsToTake)
 {
     bool reachedTarget = false;
     long currPos = 0;
+
+    if (sampleInterval < 2)
+    {
+        /* We can't have a sampleInterval of less than every two steps,
+           it would not fit in _sweepReadings array (it can hold a max of 360 elements)*/
+       sampleInterval = 2;
+    }
 
     // Reset the number of sweep readings to zero as we are taking a new sweep
     _numSweepReadings = 0;
@@ -118,6 +134,7 @@ void Lidar360::performSweepScan(const int sampleInterval, const int numReadingsT
     _lcd->setCursor(0,0);
     _lcd->print("DO:Sweep Scan");
 
+    // Perfrom a complete revolution
     _motor->move(STEPS_PER_REVOLUTION);
     _motor->setSpeed(_maxSpeed);
 
@@ -126,20 +143,20 @@ void Lidar360::performSweepScan(const int sampleInterval, const int numReadingsT
         if(_motor->targetPosition() != _motor->currentPosition())
         {
             _motor->runSpeedToPosition();
+
+            /* Take a reading on the step interval specified by sampleInterval */
+            currPos = _motor->currentPosition();
+            if (0 == (currPos % sampleInterval))
+            {
+                /* We store the reading and heading of the reading */
+                _sweepReadings[_numSweepReadings].distance = llGetDistanceAverage(numReadingsToTake);
+                _sweepReadings[_numSweepReadings].heading = stepsToApproxAngle(currPos);
+                _numSweepReadings++;
+            }
         }
         else
         {
             reachedTarget = true;
-        }
-
-        /* Take a reading on the step interval specified by sampleInterval */
-        currPos = _motor->currentPosition();
-        if (0 == (currPos % sampleInterval))
-        {
-            /* We store the reading and heading of the reading */
-            sweepReadings[_numSweepReadings].distance = llGetDistanceAverage(numReadingsToTake);
-            sweepReadings[_numSweepReadings].heading = stepsToApproxAngle(currPos);
-            _numSweepReadings++;
         }
     }
 
@@ -150,6 +167,41 @@ void Lidar360::performSweepScan(const int sampleInterval, const int numReadingsT
     _lcd->clear();
     _lcd->setCursor(0,0);
     _lcd->print("DONE:Sweep Scan");
+}
+
+void Lidar360::createSweepString(char *sweepString, const int buffSize)
+{
+    char headingStr[7];
+    char distanceStr[5];
+    const short minWidth = 4;
+    const short precision = 2;
+    LidarVec currVec;
+    const short base = 10;
+
+    if (NULL != sweepString)
+    {
+        memset(sweepString, 0, buffSize);
+    }
+
+    for (int i = 0; i < _numSweepReadings; i++)
+    {
+        /* Clear the headingStr & distanceStr */
+        memset(headingStr, 0, sizeof(headingStr));
+        memset(distanceStr, 0, sizeof(distanceStr));
+
+        currVec = _sweepReadings[i];
+        snprintf(distanceStr, sizeof(distanceStr), "%d", currVec.distance);
+        dtostrf(currVec.heading, minWidth, precision, headingStr);
+
+        /* Append values to the sweep string */
+        strncat(sweepString, distanceStr, strlen(distanceStr));
+        strncat(sweepString, ":", 1);
+        strncat(sweepString, headingStr, strlen(headingStr));
+        strncat(sweepString, ",", 1);
+    }
+
+    /* Append terminition character to the sweepString */
+    strncat(sweepString,";" , 1);
 }
 
 void Lidar360::zeroStepperMotor()

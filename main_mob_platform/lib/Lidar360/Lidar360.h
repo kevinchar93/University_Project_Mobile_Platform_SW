@@ -47,7 +47,8 @@ class Lidar360
         void    getDistanceAtHeading(int heading, char* responseBuffer, int buffSize);
 
     private:
-        void    performSweepScan(const int sampleInterval, const int numReadingsToTake);
+        void    performSweepScan(unsigned int sampleInterval, const unsigned int numReadingsToTake);
+        void    createSweepString(char *sweepString, const int buffSize);
 
         void    zeroStepperMotor();
         void    stepToRelativePosition(long steps);
@@ -75,7 +76,7 @@ class Lidar360
             float heading;
         } LidarVec;
 
-        LidarVec sweepReadings[LIDAR_MAX_VECTOR_ARRAY_SIZE];
+        LidarVec _sweepReadings[LIDAR_MAX_VECTOR_ARRAY_SIZE];
         int      _numSweepReadings;
 
         int     _buttonA;
