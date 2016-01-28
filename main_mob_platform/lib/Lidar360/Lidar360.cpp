@@ -41,64 +41,67 @@ Lidar360::Lidar360(float maxSpeed, int btnA, int btnB, int motorSleep, int lidar
 
 void Lidar360::testHarness()
 {
-    char str[3961];
-    performSweepScan(2, 2);
-
-    for (int i = 0; i < _numSweepReadings; i++)
+    char measureBuff[12];
+    while (true)
     {
-        _print->print(i);
-        _print->print("         Dist: "); _print->print(_sweepReadings[i].distance);
-        _print->print(" Head: "); _print->println(_sweepReadings[i].heading);
+        for (int i = 0; i <= 360; i+=45)
+        {
+            getDistanceAtHeading(i, measureBuff, sizeof(measureBuff));
+            _print->print("Heading: ");_print->print(i);
+            _print->print("         Reading: ");_print->println(measureBuff);
+            _print->println();
+            delay(1000);
+        }
     }
-
-    createSweepString(str, sizeof(str));
-
-    _print->println("Generated line:");
-    _print->println(str);
-    _print->println("Strlen:");
-    _print->println(strlen(str));
-
 }
 
-void Lidar360::getDistanceAtHeading(int heading, char* responseBuffer, int buffSize)
+void Lidar360::getDistanceAtHeading(const int heading, char* responseBuffer, const int buffSize)
 {
-    char tempBuff[10];
-    const int base = 10;
+    char headingStr[7];
+    char distanceStr[5];
+
+    const short minWidth = 4;
+    const short precision = 2;
+
+    int numSteps = 0;
+    LidarVec lidarData;
 
     if(NULL != responseBuffer)
     {
         memset(responseBuffer, 0, buffSize);
     }
 
-    /* Convert the heaading to a nuber of steps to take */
-    int numSteps = angleToApproxSteps(heading);
+    /* Convert the heading to a nuber of steps to take */
+    numSteps = angleToApproxSteps(heading);
+
+    /* Calculate the actual angle that the lidar can turn to - it will get as close as possible */
+    lidarData.heading = stepsToApproxAngle(numSteps);
 
     /* Spin the Lidar to the heading */
     powerUpMotor();
     stepToRelativePosition(numSteps);
 
     /* Take a distance reading at that angle and store it */
-    powerUpLidar();
-    int distanceRead = llGetDistanceAverage(NUM_READS_FOR_AVERAGE);
-    powerDownLidar();
+    lidarData.distance = llGetDistanceAverage(NUM_READS_FOR_AVERAGE);
+
 
     if (NULL != responseBuffer)
     {
-        memset(tempBuff, 0, sizeof(tempBuff));
+        /* Clear the headingStr & distanceStr buffers */
+        memset(headingStr, 0, sizeof(headingStr));
+        memset(distanceStr, 0, sizeof(distanceStr));
 
-        // convert distance to string place it in the tempBuff, then cpy to responseBuffer
-        itoa(distanceRead, tempBuff, base);
-        strncpy(responseBuffer, tempBuff, strlen(tempBuff));
+        /* Convert distance and heading to string representation, store them in temp buffers */
+        snprintf(distanceStr, sizeof(distanceStr), "%d", lidarData.distance);
+        dtostrf(lidarData.heading, minWidth, precision, headingStr);
 
-        // append a seperator between the distance reading and steps taken
-        strncat(responseBuffer, ",", 1);
-        memset(tempBuff, 0, sizeof(tempBuff));
 
-        // append the number of steps taken to reach target heading
-        itoa(numSteps, tempBuff, base);
-        strncat(responseBuffer, tempBuff, strlen(tempBuff));
+        /* Append values to the responseBuffer */
+        strncat(responseBuffer, distanceStr, strlen(distanceStr));
+        strncat(responseBuffer, ":", 1);
+        strncat(responseBuffer, headingStr, strlen(headingStr));
 
-        // append terminition character to the responseBuffer
+        /* Append termination character to the responseBuffer */
         strncat(responseBuffer,";" , 1);
     }
 
@@ -122,8 +125,7 @@ void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int 
     // Reset the number of sweep readings to zero as we are taking a new sweep
     _numSweepReadings = 0;
 
-    // Power up the motor and the lidar module
-    powerUpLidar();
+    // Power up the motor
     powerUpMotor();
 
     // Begin sweep at the zero position
@@ -160,9 +162,8 @@ void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int 
         }
     }
 
-    // Power down the motor and the lidar modules
+    // Power down the motor
     powerDownMotor();
-    powerDownLidar();
 
     _lcd->clear();
     _lcd->setCursor(0,0);
@@ -173,10 +174,11 @@ void Lidar360::createSweepString(char *sweepString, const int buffSize)
 {
     char headingStr[7];
     char distanceStr[5];
+
     const short minWidth = 4;
     const short precision = 2;
+
     LidarVec currVec;
-    const short base = 10;
 
     if (NULL != sweepString)
     {
@@ -185,7 +187,7 @@ void Lidar360::createSweepString(char *sweepString, const int buffSize)
 
     for (int i = 0; i < _numSweepReadings; i++)
     {
-        /* Clear the headingStr & distanceStr */
+        /* Clear the headingStr & distanceStr buffers */
         memset(headingStr, 0, sizeof(headingStr));
         memset(distanceStr, 0, sizeof(distanceStr));
 
@@ -317,7 +319,7 @@ void Lidar360::powerUpMotor()
 void Lidar360::initLidar()
 {
     /* First power up the module by pulling enable pin HIGH */
-    digitalWrite(_lidarModuleEn, HIGH);
+    powerUpLidar();
 
     // Opens & joins the irc bus as master
     I2c.begin();
@@ -330,8 +332,6 @@ void Lidar360::initLidar()
 
      // reset device to defaults for distance measurment
     llWriteAndWait(0x00, 0x00);
-
-    powerDownLidar();
 }
 
 void Lidar360::verifyLidarOutput()
@@ -341,8 +341,6 @@ void Lidar360::verifyLidarOutput()
     unsigned long currTime = 0;
     unsigned long prevTime = 0;
     const int interval = 2000;
-
-    powerUpLidar();
 
     _lcd->clear();
     _lcd->setCursor(0,1);
@@ -374,7 +372,6 @@ void Lidar360::verifyLidarOutput()
     _lcd->clear();
     _lcd->setCursor(0,0);
     _lcd->print("Btn Pressed!");
-    powerDownLidar();
 
     /* Delay to allow user to remove finger from button */
     delay(LIDAR_BUTTON_PRESS_DELAY);
@@ -395,10 +392,6 @@ void Lidar360::powerUpLidar()
 {
     /* Power up the module by pulling enable pin HIGH */
     digitalWrite(_lidarModuleEn, HIGH);
-
-    /* Wait for device power up, then reset device to defaults */
-    delay(LIDAR_MODULE_POWER_DELAY);
-    llWriteAndWait(0x00, 0x00);
 }
 
 // Write a register and wait until it responds with success

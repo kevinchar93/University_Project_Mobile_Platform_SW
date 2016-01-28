@@ -44,14 +44,7 @@ void setup()
     Lidar360 lidar360(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP,
                       LIDAR_MODULE_EN, lidarStep, Serial, lcd);
 
-
-    while (true)
-    {
-        lidar360.testHarness();
-
-        // delay 2 mins
-        delay(2 * 60000);
-    }
+    lidar360.testHarness();
 }
 
 
