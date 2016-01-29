@@ -18,7 +18,7 @@ DiffDrive::DiffDrive(const float maxSpeed, const uint8_t leftMotorSleep, const u
      powerDownMotors();
  }
 
-void DiffDrive::moveForward(const uint32_t distanceMM, const bool gridMode, const uint32_t gridSize)
+void DiffDrive::moveForward(const uint16_t distanceMM, const bool gridMode, const uint16_t gridSize)
 {
     uint32_t totalTravelDistance = 0;
 
@@ -29,7 +29,7 @@ void DiffDrive::moveForward(const uint32_t distanceMM, const bool gridMode, cons
 
 }
 
-void DiffDrive::moveBackward(const uint32_t distanceMM, const bool gridMode, const uint32_t gridSize)
+void DiffDrive::moveBackward(const uint16_t distanceMM, const bool gridMode, const uint16_t gridSize)
 {
     uint32_t totalTravelDistance = 0;
 
@@ -37,7 +37,7 @@ void DiffDrive::moveBackward(const uint32_t distanceMM, const bool gridMode, con
     // Other wise it represets distance to travel in milimeters
     totalTravelDistance = gridMode ? (distanceMM * gridSize) : distance;
 
-    
+
 }
 
 void DiffDrive::turnRight90Degrees()
