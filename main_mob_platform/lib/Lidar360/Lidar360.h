@@ -23,7 +23,7 @@
 #define LIDAR_MAX_SPEED 550
 #define LIDAR_MANUAL_ZERO_SPEED 10.0
 
-#define LIDAR_MOTOR_POWER_DELAY 5
+#define LIDAR_MOTOR_POWER_DELAY 2
 #define LIDAR_MODULE_POWER_DELAY 150
 
 #define LIDAR_BUTTON_PRESS_DELAY 1000
@@ -44,7 +44,9 @@
 class Lidar360
 {
     public:
-        Lidar360 (float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr, HardwareSerial  &print, LiquidCrystal &lcd);
+        Lidar360 (float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr,
+                  HardwareSerial  &print, LiquidCrystal &lcd);
+
         void    testHarness();
         void    getDistanceAtHeading(const int heading, char* responseBuffer, const int buffSize);
         void    getDistanceSweep(char *sweepString, const int buffSize);

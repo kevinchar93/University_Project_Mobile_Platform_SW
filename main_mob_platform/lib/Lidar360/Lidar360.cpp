@@ -381,7 +381,7 @@ void Lidar360::verifyLidarOutput()
 
 void Lidar360::setLidarOffSet(int offSet)
 {
-
+    // TODO: implement this feature
 }
 
 void Lidar360::powerDownLidar()
