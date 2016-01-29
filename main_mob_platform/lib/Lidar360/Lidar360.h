@@ -13,9 +13,11 @@
 #include <AccelStepper.h>
 #include <LiquidCrystal.h>
 
-#define STEPS_PER_REVOLUTION 700.0
+#define LIDAR_STEPS_PER_REVOLUTION 700.0
 
-#define NUM_READS_FOR_AVERAGE 3
+#define LIDAR_NUM_READS_FOR_AVERAGE 3
+#define LIDAR_SAMPLE_INTERVAL 35
+
 #define LIDAR_LITE_ADDRESS 0x62
 
 #define LIDAR_MAX_SPEED 550
@@ -45,6 +47,7 @@ class Lidar360
         Lidar360 (float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr, HardwareSerial  &print, LiquidCrystal &lcd);
         void    testHarness();
         void    getDistanceAtHeading(const int heading, char* responseBuffer, const int buffSize);
+        void    getDistanceSweep(char *sweepString, const int buffSize);
 
     private:
         void    performSweepScan(unsigned int sampleInterval, const unsigned int numReadingsToTake);

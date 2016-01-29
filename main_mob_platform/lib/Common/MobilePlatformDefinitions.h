@@ -32,6 +32,9 @@
 
 /* Def related to the robots LIDAR */
 #define MAX_LIDAR_ANGLE 360
-#define LIDAR_DATA_BUFFER_SIZE 4500
 
+// max number of readings is 360, buffer size is this multiplied by max number of bytes
+// per reading str (11) plus semicolon and teminating null character giving total of 3962 bytes
+// 3964 used as it is closest sufficient multiple of 4
+#define LIDAR_DATA_BUFFER_SIZE 3964
 #endif

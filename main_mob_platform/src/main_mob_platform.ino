@@ -44,7 +44,10 @@ void setup()
     Lidar360 lidar360(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP,
                       LIDAR_MODULE_EN, lidarStep, Serial, lcd);
 
-    lidar360.testHarness();
+    lidar360.getDistanceSweep(lidarDataBuffer, sizeof(lidarDataBuffer));
+    Serial.println(lidarDataBuffer);
+    while(true)
+    ;
 }
 
 
