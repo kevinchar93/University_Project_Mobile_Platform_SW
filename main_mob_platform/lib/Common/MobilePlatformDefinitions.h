@@ -29,6 +29,7 @@
 #define REMOTE_COMM_DEBOUNCE_TIME_MS 200
 
 /* Defs related to the robots motion */
+#define MAX_DRIVE_SPEED 250
 
 /* Def related to the robots LIDAR */
 #define MAX_LIDAR_ANGLE 360

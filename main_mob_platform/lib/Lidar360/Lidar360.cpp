@@ -1,6 +1,6 @@
 #include "Lidar360.h"
 
-Lidar360::Lidar360(float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr, HardwareSerial  &print, LiquidCrystal &lcd)
+void Lidar360::init(float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr, HardwareSerial  &print, LiquidCrystal &lcd)
 {
     _print = &print;
     _lcd = &lcd;

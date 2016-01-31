@@ -3,7 +3,7 @@
 #include <MobilePlatformDefinitions.h>
 #include <PinMap.h>
 #include <AccelStepper.h>
-#include <MultiStepper.h>
+#include <DiffDrive.h>
 #include <Lidar360.h>
 
 
@@ -17,12 +17,19 @@ bool insErrorOccurred;
 
 char lidarDataBuffer [LIDAR_DATA_BUFFER_SIZE];
 
-AccelStepper lidarStep(AccelStepper::DRIVER, LIDAR_STEP, LIDAR_DIR);
+AccelStepper lidarStepper(AccelStepper::DRIVER, LIDAR_STEP, LIDAR_DIR);
+AccelStepper leftDriveStepper(AccelStepper::DRIVER, LEFT_MOTOR_STEP, LEFT_MOTOR_DIR);
+AccelStepper rightDriveStepper(AccelStepper::DRIVER, RIGHT_MOTOR_STEP, RIGHT_MOTOR_DIR);
+
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+
+Lidar360 lidar360;
+
+DiffDrive driveSystem;
 
 void setup()
 {
-    Serial.begin(115200);
+    Serial.begin(9600);
     lcd.begin(LCD_COLS, LCD_ROWS);
 
     /* Initialise intruction buffer and elements needed to work with it */
@@ -37,15 +44,20 @@ void setup()
     // // initialise connnection
     // robotComm.waitForConnection();
 
-    const int bSize = 10;
-    const int timeDelay = 1000;
-    char measureBuff[10];
+    driveSystem.init(MAX_DRIVE_SPEED, LEFT_MOTOR_SLEEP, RIGHT_MOTOR_SLEEP, leftDriveStepper,
+                     rightDriveStepper, Serial, lcd);
 
-    Lidar360 lidar360(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP,
-                      LIDAR_MODULE_EN, lidarStep, Serial, lcd);
+    // lidar360.init(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP,
+    //               LIDAR_MODULE_EN, lidarStepper, Serial, lcd);
 
-    lidar360.getDistanceSweep(lidarDataBuffer, sizeof(lidarDataBuffer));
-    Serial.println(lidarDataBuffer);
+    /* Show the robot welcome message */
+    showLcdMessage("Welcome, press A", "btn to continue", 0, &lcd);
+    pressButtonToContinue(LIDAR_BUTTON_A, 2000);
+
+    // lidar360.getDistanceSweep(lidarDataBuffer, sizeof(lidarDataBuffer));
+
+    driveSystem.moveForward(5, true, 250);
+
     while(true)
     ;
 }
@@ -186,4 +198,35 @@ Instruction parseInstructionString (char* insStr)
     tempInstruction.gridMode = gridMode;
 
     return tempInstruction;
+}
+
+void showLcdMessage(const char* line1, const char* line2, uint16_t dTime, LiquidCrystal* lcd)
+{
+    if (NULL == line1 || NULL == line2)
+    {
+        return;
+    }
+
+    lcd->clear();
+    lcd->setCursor(0,0);
+    lcd->print(line1);
+    lcd->setCursor(0,1);
+    lcd->print(line2);
+
+    delay(dTime);
+}
+
+void pressButtonToContinue(uint8_t btn, uint32_t dTime)
+{
+    pinMode(btn, INPUT_PULLUP);
+
+    while(true)
+    {
+        if (digitalRead(btn) == LOW)
+        {
+            break;
+        }
+    }
+
+    delay(dTime);
 }

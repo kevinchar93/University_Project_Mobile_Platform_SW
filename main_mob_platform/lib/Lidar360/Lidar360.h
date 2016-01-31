@@ -44,8 +44,8 @@
 class Lidar360
 {
     public:
-        Lidar360 (float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr,
-                  HardwareSerial  &print, LiquidCrystal &lcd);
+        void    init (float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr,
+                      HardwareSerial  &print, LiquidCrystal &lcd);
 
         void    testHarness();
         void    getDistanceAtHeading(const int heading, char* responseBuffer, const int buffSize);
