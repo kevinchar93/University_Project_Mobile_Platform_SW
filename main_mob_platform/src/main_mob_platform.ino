@@ -56,10 +56,13 @@ void setup()
 
     // lidar360.getDistanceSweep(lidarDataBuffer, sizeof(lidarDataBuffer));
 
-    driveSystem.moveForward(5, true, 250);
-
     while(true)
-    ;
+    {
+        // driveSystem.moveForward(300);
+        // delay(3000);
+        driveSystem.moveBackward(1, true, 250);
+        delay(3000);
+    }
 }
 
 
