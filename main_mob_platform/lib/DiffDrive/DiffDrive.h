@@ -12,6 +12,9 @@
 #define DD_STEPS_PER_WHEEL_REV 200.0
 #define DD_WHEEL_CIRCUMFERENCE_MM M_PI * DD_WHEEL_DIAMETER
 
+#define DD_WHEEL_BASE_DIAMETER_MM 244.0
+#define DD_WHEEL_BASE_CIRCUMFERENCE_MM M_PI * DD_WHEEL_BASE_DIAMETER_MM
+
 #define DD_GYRO_ADDRESS 0x436353
 
 #define DD_MOTOR_POWER_DELAY 2
@@ -19,6 +22,9 @@
 #define DD_NUMBER_OF_DRIVE_MOTORS 2
 #define DD_LEFT_MOTOR_POS_INDEX 0
 #define DD_RIGHT_MOTOR_POS_INDEX 1
+
+#define DD_LCD_DISPLAY_TIME 1500
+#define DD_MOTOR_STOP_TIME 500
 
 
 
@@ -30,9 +36,9 @@ class DiffDrive
 
         float   moveForward(const uint16_t distanceMM, const bool gridMode = false, const uint16_t gridSizeMM = 0);
         float   moveBackward(const uint16_t distanceMM, const bool gridMode = false, const uint16_t gridSizeMM = 0);
-        void    turnRight90Degrees();
-        void    turnLeft90Degrees();
-        void    turnAround180Degrees();
+        float   turnRight90Degrees();
+        float   turnLeft90Degrees();
+        float   turnAround180Degrees();
 
     private:
         void    powerUpMotors();

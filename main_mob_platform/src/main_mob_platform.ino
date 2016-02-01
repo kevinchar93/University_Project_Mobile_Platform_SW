@@ -58,10 +58,12 @@ void setup()
 
     while(true)
     {
-        // driveSystem.moveForward(300);
-        // delay(3000);
-        driveSystem.moveBackward(1, true, 250);
-        delay(3000);
+        driveSystem.turnRight90Degrees();
+        delay(5000);
+        driveSystem.turnLeft90Degrees();
+        delay(5000);
+        driveSystem.turnAround180Degrees();
+        delay(5000);
     }
 }
 
