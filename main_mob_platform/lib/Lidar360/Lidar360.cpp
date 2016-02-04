@@ -53,7 +53,7 @@ void Lidar360::getDistanceAtHeading(const int heading, char* responseBuffer, con
     _lcd->clear();
     _lcd->setCursor(0,0);
     _lcd->print("DO:Dist @ head");
-    delay(LIDAR_BUTTON_PRESS_DELAY);
+    delay(LIDAR_LCD_DISPLAY_TIME);
 
     /* Convert the heading to a nuber of steps to take */
     numSteps = angleToApproxSteps(heading);
@@ -95,7 +95,7 @@ void Lidar360::getDistanceAtHeading(const int heading, char* responseBuffer, con
     _lcd->clear();
     _lcd->setCursor(0,0);
     _lcd->print("DONE:Dist @ head");
-    delay(LIDAR_BUTTON_PRESS_DELAY);
+    delay(LIDAR_LCD_DISPLAY_TIME);
 }
 
 void Lidar360::getDistanceSweep(char *sweepString, const int buffSize)
@@ -104,7 +104,7 @@ void Lidar360::getDistanceSweep(char *sweepString, const int buffSize)
     _lcd->clear();
     _lcd->setCursor(0,0);
     _lcd->print("DO:Sweep Scan");
-    delay(LIDAR_BUTTON_PRESS_DELAY);
+    delay(LIDAR_LCD_DISPLAY_TIME);
 
     /* Firstly perfrom the sweep to fill _sweepReadings & _numSweepReadings with data */
     performSweepScan(LIDAR_SAMPLE_INTERVAL, LIDAR_NUM_READS_FOR_AVERAGE);
@@ -116,7 +116,7 @@ void Lidar360::getDistanceSweep(char *sweepString, const int buffSize)
     _lcd->clear();
     _lcd->setCursor(0,0);
     _lcd->print("DONE:Sweep Scan");
-    delay(LIDAR_BUTTON_PRESS_DELAY);
+    delay(LIDAR_LCD_DISPLAY_TIME);
 }
 
 void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int numReadingsToTake)
@@ -250,7 +250,7 @@ void Lidar360::zeroStepperMotor()
 
     /* Power down the motor now we have finished zeroing */
     powerDownMotor();
-    delay(LIDAR_BUTTON_PRESS_DELAY);
+    delay(LIDAR_LCD_DISPLAY_TIME);
 }
 
 void Lidar360::stepToRelativePosition(long steps)

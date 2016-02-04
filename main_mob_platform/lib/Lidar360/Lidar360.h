@@ -28,6 +28,8 @@
 
 #define LIDAR_BUTTON_PRESS_DELAY 1000
 
+#define LIDAR_LCD_DISPLAY_TIME 1500
+
 #define LIDAR_MAX_VECTOR_ARRAY_SIZE 360 // defines the max ammount of LidarVecs that will be held in the class array
 
 /* Define number of steps to reach these common angles */
