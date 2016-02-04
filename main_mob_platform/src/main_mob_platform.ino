@@ -6,61 +6,62 @@
 #include <DiffDrive.h>
 #include <Lidar360.h>
 
-
-
-
+/* Vars used to store instruction informatin */
+Instruction currInstruction;
 char instructionBuffer [INSTRUCTION_BUFFER_SIZE];
 int instructionBytes;
 int bytesRead;
-Instruction currInstruction;
 bool insErrorOccurred;
 
+/* Vars used to store information from the lidar module */
 char lidarDataBuffer [LIDAR_DATA_BUFFER_SIZE];
 
+/* Vars used to access the stepper motors used in the Lidar and Drive systems */
 AccelStepper lidarStepper(AccelStepper::DRIVER, LIDAR_STEP, LIDAR_DIR);
 AccelStepper leftDriveStepper(AccelStepper::DRIVER, LEFT_MOTOR_STEP, LEFT_MOTOR_DIR);
 AccelStepper rightDriveStepper(AccelStepper::DRIVER, RIGHT_MOTOR_STEP, RIGHT_MOTOR_DIR);
 
+/* Vars used to access the lcd screen on the robot */
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
-RemoteComm robotComm;
-Lidar360 lidar360;
+/* Vars used to abstract and control the 3 hardware systems used in the robot */
+RemoteComm comm;
+Lidar360 lidar;
 DiffDrive driveSystem;
 
 void setup()
 {
+    /* Initialise intruction buffer and elements needed to work with it */
+    memset(instructionBuffer, 0, sizeof(instructionBuffer));
+    instructionBytes = 0;
+    instructionBytes = 0;
+    bytesRead = 0;
+    insErrorOccurred = false;
+
+    /* Kick off the debug serial comm and the lcd screen */
     Serial.begin(9600);
     lcd.begin(LCD_COLS, LCD_ROWS);
 
-    /* Initialise intruction buffer and elements needed to work with it */
-    // memset(instructionBuffer, 0, sizeof(instructionBuffer));
-    // instructionBytes = 0;
-    // bytesRead = 0;
-    //
-    // // init debug serial
-    // Serial.begin(9600);
-    // robotComm.setPrint(Serial);
-    //
-    // // initialise connnection
-    // robotComm.waitForConnection();
+    /* Call the initialisation methods for RemoteComm, DiffDrive and Lidar360 */
+    comm.init(COMM_STATE_PIN, COMM_BUTTON_PIN, COMM_LED_PIN, COMM_BAUD_RATE, Serial, lcd);
+    driveSystem.init(MAX_DRIVE_SPEED, LEFT_MOTOR_SLEEP, RIGHT_MOTOR_SLEEP, leftDriveStepper, rightDriveStepper, Serial, lcd);
+    lidar.init(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP, LIDAR_MODULE_EN, lidarStepper, Serial, lcd);
 
-    driveSystem.init(MAX_DRIVE_SPEED, LEFT_MOTOR_SLEEP, RIGHT_MOTOR_SLEEP, leftDriveStepper,
-                     rightDriveStepper, Serial, lcd);
+    /* First user has to verify that the lidar output makes senses and it doesent need restarting */
+    lidar.verifyLidarOutput();
 
-    // lidar360.init(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP,
-    //               LIDAR_MODULE_EN, lidarStepper, Serial, lcd);
+    /* Then the have to use the A & B button on the robot to put the lidar into zero position */
+    lidar.zeroStepperMotor();
 
-    /* Show the robot welcome message */
-    showLcdMessage("Welcome, press A", "btn to continue", 0, &lcd);
-    pressButtonToContinue(LIDAR_BUTTON_A, 2000);
-
+    /* Once this is done we can begin waiting for a connection to the control software */
+    comm.waitForConnection();
 }
 
 
 void loop()
 {
     /* Check for instructions & read them into buffer */
-    if ((instructionBytes = robotComm.isInstructionAvailable()) > 0 )
+    if ((instructionBytes = comm.isInstructionAvailable()) > 0 )
     {
         Serial.println("--------------------------------------------------------");
         Serial.println("Instruction available read it into buffer");
@@ -68,7 +69,7 @@ void loop()
         memset(instructionBuffer, 0, sizeof(instructionBuffer));
 
         // read all the bytes from the serial buffer into the instruction buffer
-        bytesRead = robotComm.readInstructions(instructionBuffer, instructionBytes);
+        bytesRead = comm.readInstructions(instructionBuffer, instructionBytes);
         Serial.print("instruction bytes: ");
         Serial.print(instructionBytes);
         Serial.print(", message: ");
@@ -94,13 +95,13 @@ void loop()
         {
             Serial.println("Error occured, send error message");
             // send a message to the control sw that an error ocurred
-            robotComm.sendMessage(INSTRUCTION_VERIFIED_ERROR);
+            comm.sendMessage(INSTRUCTION_VERIFIED_ERROR);
         }
         else
         {
             Serial.println("No error occured, send okay message");
             // send verification okay message back
-            robotComm.sendMessage(INSTRUCTION_VERIFIED_OK);
+            comm.sendMessage(INSTRUCTION_VERIFIED_OK);
             // execute instruction
             // send back any data that was created during the instruction execution
             // send messae saying instruction executed
@@ -154,7 +155,7 @@ void todo1 ()
     {
         Serial.println("button pressed");
         char charArray[] = "123:1,425:2,552:3,234:4,234:5,213:6,213:7,243:8,125:9\n";
-        robotComm.sendMessage(charArray);
+        comm.sendMessage(charArray);
         Serial.println("data sent");
         delay(2000);
         Serial.println("delay started");
@@ -210,7 +211,7 @@ void showLcdMessage(const char* line1, const char* line2, uint16_t dTime, Liquid
     delay(dTime);
 }
 
-void pressButtonToContinue(uint8_t btn, uint32_t dTime)
+void pressButtonToContinue(uint8_t btn, uint32_t dTime, LiquidCrystal* lcd)
 {
     pinMode(btn, INPUT_PULLUP);
 
@@ -222,5 +223,8 @@ void pressButtonToContinue(uint8_t btn, uint32_t dTime)
         }
     }
 
+    lcd->clear();
+    lcd->setCursor(0,0);
+    lcd->print("Button Pressed!");
     delay(dTime);
 }

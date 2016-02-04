@@ -26,5 +26,10 @@
 // max number of readings is 360, buffer size is this multiplied by max number of bytes
 // per reading str (11) plus semicolon and teminating null character giving total of 3962 bytes
 // 3964 used as it is closest sufficient multiple of 4
-#define LIDAR_DATA_BUFFER_SIZE 3964
+//#define LIDAR_DATA_BUFFER_SIZE 3964
+
+// In reality the mega platform has limited memory, and with the sample interval defined in Lidar360
+// by LIDAR_SAMPLE_INTERVAL being 20, 35 measurements will be taken, 35 * 11 bytes per string
+// representation of each measurment = 385 bytes, rounded to 400;
+#define LIDAR_DATA_BUFFER_SIZE 400
 #endif

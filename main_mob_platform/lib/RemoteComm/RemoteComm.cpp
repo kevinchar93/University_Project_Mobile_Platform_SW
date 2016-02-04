@@ -78,6 +78,13 @@ void RemoteComm::waitForConnection ()
         {
             /* We have a connection, blink led slower and wait for button press */
             interval = REMOTE_COMM_CONNECTED_INTERVAL;
+
+            /* Update Lcd message */
+            _lcd->clear();
+            _lcd->setCursor(0,0);
+            _lcd->print("Connected press");
+            _lcd->setCursor(0,1);
+            _lcd->print("C to continue");
             while (keepLooping)
             {
                 currTime = millis();
@@ -107,11 +114,6 @@ void RemoteComm::waitForConnection ()
        as the button might still read high for a while after it is pressed
      */
     delay(REMOTE_COMM_DEBOUNCE_TIME_MS);
-
-    /* Print message to lcd */
-    _lcd->clear();
-    _lcd->setCursor(0,0);
-    _lcd->print("Connected!");
 }
 
 bool RemoteComm::isStillConnected ()

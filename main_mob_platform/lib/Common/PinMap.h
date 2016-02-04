@@ -8,7 +8,7 @@
 #define COMM_RX_PIN         19          /* We recieve on this pin */
 #define COMM_ENABLE_PIN     -1          /* Not used */
 #define COMM_STATE_PIN      22
-#define COMM_BUTTON_PIN     23
+#define COMM_BUTTON_PIN     25
 #define COMM_LED_PIN        24
 #define COMM_BAUD_RATE      9600
 
