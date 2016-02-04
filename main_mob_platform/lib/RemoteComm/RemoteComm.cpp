@@ -21,6 +21,13 @@ void RemoteComm::init(int state, int button, int led, int baudRate, HardwareSeri
 
 void RemoteComm::waitForConnection ()
 {
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("Waiting for a");
+    _lcd->setCursor(0,1);
+    _lcd->print("Connection...");
+
     bool keepLooping = true;
     bool handShakeSignalA = false;
 
@@ -101,6 +108,10 @@ void RemoteComm::waitForConnection ()
      */
     delay(REMOTE_COMM_DEBOUNCE_TIME_MS);
 
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("Connected!");
 }
 
 bool RemoteComm::isStillConnected ()
