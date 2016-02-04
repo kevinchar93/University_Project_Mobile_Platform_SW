@@ -47,7 +47,8 @@ class Lidar360
         void    init (float maxSpeed, int btnA, int btnB, int motorSleep, int lidarEn, AccelStepper &mtr,
                       HardwareSerial  &print, LiquidCrystal &lcd);
 
-        void    testHarness();
+        void    verifyLidarOutput();
+        void    zeroStepperMotor();
         void    getDistanceAtHeading(const int heading, char* responseBuffer, const int buffSize);
         void    getDistanceSweep(char *sweepString, const int buffSize);
 
@@ -55,14 +56,12 @@ class Lidar360
         void    performSweepScan(unsigned int sampleInterval, const unsigned int numReadingsToTake);
         void    createSweepString(char *sweepString, const int buffSize);
 
-        void    zeroStepperMotor();
         void    stepToRelativePosition(long steps);
         void    stepToZeroPosition();
         void    powerDownMotor();
         void    powerUpMotor();
 
         void    initLidar();
-        void    verifyLidarOutput();
         void    powerDownLidar();
         void    powerUpLidar();
         void    setLidarOffSet(int offSet);

@@ -31,17 +31,6 @@ void Lidar360::init(float maxSpeed, int btnA, int btnB, int motorSleep, int lida
 
     /* Init the lidar module it self */
     initLidar();
-
-    /* Now Lidar module is up - check the output to see if we need a reset */
-    verifyLidarOutput();
-
-    /* Finally wait for the Lidar to be set to the zero position */
-    zeroStepperMotor();
-}
-
-void Lidar360::testHarness()
-{
-
 }
 
 void Lidar360::getDistanceAtHeading(const int heading, char* responseBuffer, const int buffSize)

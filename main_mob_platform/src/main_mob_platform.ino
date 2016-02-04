@@ -54,17 +54,6 @@ void setup()
     showLcdMessage("Welcome, press A", "btn to continue", 0, &lcd);
     pressButtonToContinue(LIDAR_BUTTON_A, 2000);
 
-    // lidar360.getDistanceSweep(lidarDataBuffer, sizeof(lidarDataBuffer));
-
-    while(true)
-    {
-        driveSystem.turnRight90Degrees();
-        delay(5000);
-        driveSystem.turnLeft90Degrees();
-        delay(5000);
-        driveSystem.turnAround180Degrees();
-        delay(5000);
-    }
 }
 
 
