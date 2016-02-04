@@ -60,6 +60,8 @@ void setup()
 
 void loop()
 {
+    showLcdMessage("Waiting for an", "instruction", 0, lcd);
+
     /* Check for instructions & read them into buffer */
     if ((instructionBytes = comm.isInstructionAvailable()) > 0 )
     {
@@ -195,23 +197,23 @@ Instruction parseInstructionString (char* insStr)
     return tempInstruction;
 }
 
-void showLcdMessage(const char* line1, const char* line2, uint16_t dTime, LiquidCrystal* lcd)
+void showLcdMessage(const char* line1, const char* line2, uint16_t dTime, LiquidCrystal& lcd)
 {
     if (NULL == line1 || NULL == line2)
     {
         return;
     }
 
-    lcd->clear();
-    lcd->setCursor(0,0);
-    lcd->print(line1);
-    lcd->setCursor(0,1);
-    lcd->print(line2);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(line1);
+    lcd.setCursor(0,1);
+    lcd.print(line2);
 
     delay(dTime);
 }
 
-void pressButtonToContinue(uint8_t btn, uint32_t dTime, LiquidCrystal* lcd)
+void pressButtonToContinue(uint8_t btn, uint32_t dTime, LiquidCrystal& lcd)
 {
     pinMode(btn, INPUT_PULLUP);
 
@@ -223,8 +225,8 @@ void pressButtonToContinue(uint8_t btn, uint32_t dTime, LiquidCrystal* lcd)
         }
     }
 
-    lcd->clear();
-    lcd->setCursor(0,0);
-    lcd->print("Button Pressed!");
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Button Pressed!");
     delay(dTime);
 }
