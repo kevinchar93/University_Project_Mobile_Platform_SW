@@ -12,7 +12,7 @@
 class RemoteComm
 {
     public:
-        RemoteComm(int state, int button, int led, int baudRate);
+        void    init(int state, int button, int led, int baudRate);
         void    waitForConnection ();
         bool    isStillConnected();
         int     sendMessage(const char* readings);

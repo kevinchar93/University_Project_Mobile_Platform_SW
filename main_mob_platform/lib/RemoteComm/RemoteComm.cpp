@@ -3,7 +3,7 @@
 #include "MobilePlatformTypes.h"
 #include "MobilePlatformDefinitions.h"
 
-RemoteComm::RemoteComm(int state, int button, int led, int baudRate)
+void RemoteComm::init(int state, int button, int led, int baudRate)
 {
     _isInit = false;
 

@@ -7,7 +7,7 @@
 #include <Lidar360.h>
 
 
-RemoteComm robotComm(COMM_STATE_PIN, COMM_BUTTON_PIN, COMM_LED_PIN, COMM_BAUD_RATE);
+
 
 char instructionBuffer [INSTRUCTION_BUFFER_SIZE];
 int instructionBytes;
@@ -23,8 +23,8 @@ AccelStepper rightDriveStepper(AccelStepper::DRIVER, RIGHT_MOTOR_STEP, RIGHT_MOT
 
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
+RemoteComm robotComm;
 Lidar360 lidar360;
-
 DiffDrive driveSystem;
 
 void setup()
