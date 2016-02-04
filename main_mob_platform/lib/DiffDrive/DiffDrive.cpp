@@ -171,6 +171,14 @@ float DiffDrive::turnRight90Degrees()
     targetPositions[DD_LEFT_MOTOR_POS_INDEX] = numStepsToTake;
     targetPositions[DD_RIGHT_MOTOR_POS_INDEX] = -numStepsToTake;
 
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DO:");
+    _lcd->setCursor(0,1);
+    _lcd->print("Turn Right");
+    delay(DD_LCD_DISPLAY_TIME);
+
     /* Move the motors to their target positions */
     powerUpMotors();
     _motorGroup.moveTo(targetPositions);
@@ -190,6 +198,14 @@ float DiffDrive::turnRight90Degrees()
     _rightMotor->setCurrentPosition(0);
     _leftMotor->setCurrentPosition(0);
     powerDownMotors();
+
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DONE:");
+    _lcd->setCursor(0,1);
+    _lcd->print("Turn Right");
+    delay(DD_LCD_DISPLAY_TIME);
 }
 
 float DiffDrive::turnLeft90Degrees()
@@ -211,6 +227,14 @@ float DiffDrive::turnLeft90Degrees()
     targetPositions[DD_LEFT_MOTOR_POS_INDEX] = -numStepsToTake;
     targetPositions[DD_RIGHT_MOTOR_POS_INDEX] = numStepsToTake;
 
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DO:");
+    _lcd->setCursor(0,1);
+    _lcd->print("Turn Left");
+    delay(DD_LCD_DISPLAY_TIME);
+
     /* Move the motors to their target positions */
     powerUpMotors();
     _motorGroup.moveTo(targetPositions);
@@ -230,6 +254,14 @@ float DiffDrive::turnLeft90Degrees()
     _rightMotor->setCurrentPosition(0);
     _leftMotor->setCurrentPosition(0);
     powerDownMotors();
+
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DONE:");
+    _lcd->setCursor(0,1);
+    _lcd->print("Turn Left");
+    delay(DD_LCD_DISPLAY_TIME);
 }
 
 float DiffDrive::turnAround180Degrees()
@@ -251,6 +283,14 @@ float DiffDrive::turnAround180Degrees()
     targetPositions[DD_LEFT_MOTOR_POS_INDEX] = -numStepsToTake;
     targetPositions[DD_RIGHT_MOTOR_POS_INDEX] = numStepsToTake;
 
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DO:");
+    _lcd->setCursor(0,1);
+    _lcd->print("Turn Around");
+    delay(DD_LCD_DISPLAY_TIME);
+
     /* Move the motors to their target positions */
     powerUpMotors();
     _motorGroup.moveTo(targetPositions);
@@ -270,6 +310,14 @@ float DiffDrive::turnAround180Degrees()
     _rightMotor->setCurrentPosition(0);
     _leftMotor->setCurrentPosition(0);
     powerDownMotors();
+
+    /* Print message to lcd */
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DONE:");
+    _lcd->setCursor(0,1);
+    _lcd->print("Turn Around");
+    delay(DD_LCD_DISPLAY_TIME);
 }
 
 void DiffDrive::powerUpMotors()
