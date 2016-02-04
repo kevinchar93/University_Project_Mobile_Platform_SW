@@ -49,6 +49,12 @@ void Lidar360::getDistanceAtHeading(const int heading, char* responseBuffer, con
         memset(responseBuffer, 0, buffSize);
     }
 
+    // Begin message
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DO:Dist @ head");
+    delay(LIDAR_BUTTON_PRESS_DELAY);
+
     /* Convert the heading to a nuber of steps to take */
     numSteps = angleToApproxSteps(heading);
 
@@ -84,15 +90,33 @@ void Lidar360::getDistanceAtHeading(const int heading, char* responseBuffer, con
     /* Return the motor to the zero position */
     stepToZeroPosition();
     powerDownMotor();
+
+    // Done message
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DONE:Dist @ head");
+    delay(LIDAR_BUTTON_PRESS_DELAY);
 }
 
 void Lidar360::getDistanceSweep(char *sweepString, const int buffSize)
 {
+    // Begin message
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DO:Sweep Scan");
+    delay(LIDAR_BUTTON_PRESS_DELAY);
+
     /* Firstly perfrom the sweep to fill _sweepReadings & _numSweepReadings with data */
     performSweepScan(LIDAR_SAMPLE_INTERVAL, LIDAR_NUM_READS_FOR_AVERAGE);
 
     /* Then turn that data into a string placing the string in the supplied buffer */
     createSweepString(sweepString, buffSize);
+
+    // Done message
+    _lcd->clear();
+    _lcd->setCursor(0,0);
+    _lcd->print("DONE:Sweep Scan");
+    delay(LIDAR_BUTTON_PRESS_DELAY);
 }
 
 void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int numReadingsToTake)
@@ -115,11 +139,6 @@ void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int 
 
     // Begin sweep at the zero position
     stepToZeroPosition();
-
-    // Prepare the display
-    _lcd->clear();
-    _lcd->setCursor(0,0);
-    _lcd->print("DO:Sweep Scan");
 
     // Perfrom a complete revolution
     _motor->move(LIDAR_STEPS_PER_REVOLUTION);
@@ -149,10 +168,6 @@ void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int 
 
     // Power down the motor
     powerDownMotor();
-
-    _lcd->clear();
-    _lcd->setCursor(0,0);
-    _lcd->print("DONE:Sweep Scan");
 }
 
 void Lidar360::createSweepString(char *sweepString, const int buffSize)
