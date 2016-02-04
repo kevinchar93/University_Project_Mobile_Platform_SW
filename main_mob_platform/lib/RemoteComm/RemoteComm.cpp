@@ -1,9 +1,6 @@
-#include <Arduino.h>
 #include "RemoteComm.h"
-#include "MobilePlatformTypes.h"
-#include "MobilePlatformDefinitions.h"
 
-void RemoteComm::init(int state, int button, int led, int baudRate)
+void RemoteComm::init(int state, int button, int led, int baudRate, HardwareSerial  &print, LiquidCrystal &lcd)
 {
     _isInit = false;
 
@@ -15,6 +12,8 @@ void RemoteComm::init(int state, int button, int led, int baudRate)
     _button = button;
     _led = led;
     _baudRate = baudRate;
+    _print = &print;
+    _lcd = &lcd;
 
     Serial1.begin(_baudRate);
     _isInit = true;
@@ -161,8 +160,4 @@ bool RemoteComm::handshake()
         }
 
     }
-}
-
-void RemoteComm::setPrint(HardwareSerial  &print) {
-    _print = &print;
 }
