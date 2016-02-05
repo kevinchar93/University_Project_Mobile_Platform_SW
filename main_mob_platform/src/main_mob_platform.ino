@@ -15,6 +15,7 @@ bool insErrorOccurred;
 
 /* Vars used to store information from the lidar module */
 char lidarDataBuffer [LIDAR_DATA_BUFFER_SIZE];
+char lidarHeadingDistBuffer [LIDAR_HEADING_DIST_BUFFER];
 
 /* Vars used to access the stepper motors used in the Lidar and Drive systems */
 AccelStepper lidarStepper(AccelStepper::DRIVER, LIDAR_STEP, LIDAR_DIR);
@@ -65,12 +66,15 @@ void loop()
     /* Check for instructions & read them into buffer */
     if ((instructionBytes = comm.isInstructionAvailable()) > 0 )
     {
+        showLcdMessage("Instruction", "received!", 0, lcd);
+
         Serial.println("--------------------------------------------------------");
         Serial.println("Instruction available read it into buffer");
-        // clear instruction buffer before reading into it
+
+        /* Clear instruction buffer before reading into it */
         memset(instructionBuffer, 0, sizeof(instructionBuffer));
 
-        // read all the bytes from the serial buffer into the instruction buffer
+        /* Read all the bytes from the serial buffer into the instruction buffer */
         bytesRead = comm.readInstructions(instructionBuffer, instructionBytes);
         Serial.print("instruction bytes: ");
         Serial.print(instructionBytes);
@@ -80,10 +84,11 @@ void loop()
         Serial.println(bytesRead);
 
         Serial.println("Checking for mismatch between bytes read & bytes received");
-        // check for mis match in num of bytes read with num bytes received
+
+        /* Check for mis match in num of bytes read with num bytes received */
         insErrorOccurred = !(instructionBytes == bytesRead);
 
-        // if no error occured, parse then verify the instruction
+        /* If no error occured, parse then verify the instruction */
         if (false == insErrorOccurred)
         {
             Serial.println("No error occured, parse instruction & attempt execution");
@@ -92,33 +97,106 @@ void loop()
         }
 
         Serial.println("check to see if an error occured during verification");
-        // check to see if an error occured during verification
+        /* Check to see if an error occured during verification */
         if (true == insErrorOccurred)
         {
             Serial.println("Error occured, send error message");
-            // send a message to the control sw that an error ocurred
+
+            /* Send a message to the control sw that an error ocurred */
             comm.sendMessage(INSTRUCTION_VERIFIED_ERROR);
         }
         else
         {
             Serial.println("No error occured, send okay message");
-            // send verification okay message back
+
+            /* Send verification okay message back */
             comm.sendMessage(INSTRUCTION_VERIFIED_OK);
-            // execute instruction
-            // send back any data that was created during the instruction execution
-            // send messae saying instruction executed
+
+            /* Execute the instruction */
+            insErrorOccurred = executeInstruction(currInstruction);
+
+            if (true == insErrorOccurred)
+            {
+                Serial.println("Error occured, send error message");
+                /* Send a message to the control sw that an error ocurred */
+                comm.sendMessage(INSTRUCTION_VERIFIED_ERROR);
+            }
+            else
+            {
+                // TODO: send mesage saying instruction executed
+                Serial.println("No error occured, send complete message");
+                /* Send verification completion message back */
+                comm.sendMessage(INSTRUCTION_COMPLETE);
+                /* Wait a period of time for the control sw to recieve the message before sending data */
+                delay(INSTRUCTION_DELAY);
+                // TODO: send back any data that was created during the instruction execution
+            }
         }
         Serial.println("--------------------------------------------------------");
-
     }
-    delay(100);
+
+    delay(MAIN_LOOP_DELAY);
 }
 
-bool verifyInstruction (Instruction instruct)
+bool executeInstruction (Instruction instruction)
 {
-    bool errorOccurred = true;
+    bool errorOccurred = false;
+    const uint16_t defaultGridSizeMM = 0;
 
-    switch (instruct.type)
+    switch (instruction.type)
+    {
+        case INS_MOVE_FORWARD:
+            driveSystem.moveForward(instruction.value, instruction.gridMode, defaultGridSizeMM);
+            errorOccurred = false;
+            break;
+
+        case INS_MOVE_BACKWARD:
+            driveSystem.moveBackward(instruction.value, instruction.gridMode, defaultGridSizeMM);
+            errorOccurred = false;
+            break;
+
+        case INS_TURN_ZERO_RIGHT_90:
+            driveSystem.turnRight90Degrees();
+            errorOccurred = false;
+            break;
+
+        case INS_TURN_ZERO_LEFT_90:
+            driveSystem.turnLeft90Degrees();
+            errorOccurred = false;
+            break;
+
+        case INS_TURN_AROUND_180:
+            driveSystem.turnAround180Degrees();
+            errorOccurred = false;
+            break;
+
+        case INS_LIDAR_360_SWEEP:
+            lidar.getDistanceSweep(lidarDataBuffer, sizeof(lidarDataBuffer));
+            errorOccurred = false;
+            break;
+
+        case INS_LIDAR_AT_ANGLE:
+            lidar.getDistanceAtHeading(instruction.value, lidarHeadingDistBuffer, sizeof(lidarHeadingDistBuffer));
+            errorOccurred = false;
+            break;
+
+        case INS_STOP:
+        case INS_ERROR:
+        /* These instruction do not occur */
+        default:
+            /* No instruction recognised */
+            errorOccurred = true;
+            break;
+    }
+
+    return errorOccurred;
+}
+
+bool verifyInstruction (Instruction instruction)
+{
+    bool errorOccurred = false;
+
+    switch (instruction.type)
     {
         case INS_ERROR:
             // instruction parser wasn't able to parse the number
@@ -136,14 +214,14 @@ bool verifyInstruction (Instruction instruct)
             break;
 
         case INS_LIDAR_AT_ANGLE:
-            if (instruct.value <= MAX_LIDAR_ANGLE)
+            if (instruction.value <= MAX_LIDAR_ANGLE)
             {
                 errorOccurred = false;
             }
             break;
 
         default:
-            // no instruction recognised
+            /* No instruction recognised */
             errorOccurred = true;
             break;
     }
