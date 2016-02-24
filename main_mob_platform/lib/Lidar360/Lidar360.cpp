@@ -119,17 +119,13 @@ void Lidar360::getDistanceSweep(char *sweepString, const int buffSize)
     delay(LIDAR_LCD_DISPLAY_TIME);
 }
 
-void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int numReadingsToTake)
+void Lidar360::performSweepScan(const unsigned int sampleInterval, const unsigned int numReadingsToTake)
 {
     bool reachedTarget = false;
     long currPos = 0;
+    long targetPos = 0;
 
-    if (sampleInterval < 2)
-    {
-        /* We can't have a sampleInterval of less than every two steps,
-           it would not fit in _sweepReadings array (it can hold a max of 360 elements)*/
-       sampleInterval = 2;
-    }
+    int targetHeading = 0;
 
     // Reset the number of sweep readings to zero as we are taking a new sweep
     _numSweepReadings = 0;
@@ -148,17 +144,24 @@ void Lidar360::performSweepScan(unsigned int sampleInterval, const unsigned int 
     {
         if(_motor->targetPosition() != _motor->currentPosition())
         {
-            _motor->runSpeedToPosition();
+            /* Get the next position to take a reading at */
+            targetPos = angleToApproxSteps(targetHeading);
 
-            /* Take a reading on the step interval specified by sampleInterval */
+            /* Take a reading at angle intervals specified by sampleInterval */
             currPos = _motor->currentPosition();
-            if (0 == (currPos % sampleInterval))
+            if (currPos == targetPos)
             {
                 /* We store the reading and heading of the reading */
                 _sweepReadings[_numSweepReadings].distance = llGetDistanceAverage(numReadingsToTake);
                 _sweepReadings[_numSweepReadings].heading = stepsToApproxAngle(currPos);
                 _numSweepReadings++;
+
+                /* Add the sample interval to targetHeading, to calculate next heading to take reading at */
+                targetHeading += sampleInterval;
             }
+
+            /* Move motor a step towards target position of one revolution */
+            _motor->runSpeedToPosition();
         }
         else
         {
@@ -338,6 +341,9 @@ void Lidar360::initLidar()
 
      // reset device to defaults for distance measurment
     llWriteAndWait(0x00, 0x00);
+
+    // Set the off set value
+    setLidarOffSet();
 }
 
 void Lidar360::verifyLidarOutput()
@@ -383,9 +389,9 @@ void Lidar360::verifyLidarOutput()
     delay(LIDAR_BUTTON_PRESS_DELAY);
 }
 
-void Lidar360::setLidarOffSet(int offSet)
+void Lidar360::setLidarOffSet()
 {
-    // TODO: implement this feature
+    llWriteAndWait(LIDAR_CALIBRATION_REGISTER, LIDAR_CALIBRATION_OFF_SET);
 }
 
 void Lidar360::powerDownLidar()

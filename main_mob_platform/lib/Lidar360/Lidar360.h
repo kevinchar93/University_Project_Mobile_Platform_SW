@@ -15,8 +15,8 @@
 
 #define LIDAR_STEPS_PER_REVOLUTION 700.0
 
-#define LIDAR_NUM_READS_FOR_AVERAGE 3
-#define LIDAR_SAMPLE_INTERVAL 20
+#define LIDAR_NUM_READS_FOR_AVERAGE 2
+#define LIDAR_SAMPLE_INTERVAL 45
 
 #define LIDAR_LITE_ADDRESS 0x62
 
@@ -29,6 +29,9 @@
 #define LIDAR_BUTTON_PRESS_DELAY 1000
 
 #define LIDAR_LCD_DISPLAY_TIME 1500
+
+#define LIDAR_CALIBRATION_OFF_SET 0xFB
+#define LIDAR_CALIBRATION_REGISTER 0x13
 
 #define LIDAR_MAX_VECTOR_ARRAY_SIZE 360 // defines the max ammount of LidarVecs that will be held in the class array
 
@@ -55,7 +58,7 @@ class Lidar360
         void    getDistanceSweep(char *sweepString, const int buffSize);
 
     private:
-        void    performSweepScan(unsigned int sampleInterval, const unsigned int numReadingsToTake);
+        void    performSweepScan(const unsigned int sampleInterval, const unsigned int numReadingsToTake);
         void    createSweepString(char *sweepString, const int buffSize);
 
         void    stepToRelativePosition(long steps);
@@ -66,7 +69,7 @@ class Lidar360
         void    initLidar();
         void    powerDownLidar();
         void    powerUpLidar();
-        void    setLidarOffSet(int offSet);
+        void    setLidarOffSet();
 
         void    llWriteAndWait(char myAddress, char myValue);
         byte    llReadAndWait(char myAddress, int numOfBytes, byte arrayToSave[2]);
