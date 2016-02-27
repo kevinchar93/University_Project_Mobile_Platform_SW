@@ -123,21 +123,34 @@ void loop()
             }
             else
             {
-                // TODO: send mesage saying instruction executed
                 Serial.println("No error occured, send complete message");
                 /* Send verification completion message back */
                 comm.sendMessage(INSTRUCTION_COMPLETE);
+
                 /* Wait a period of time for the control sw to recieve the message before sending data */
                 delay(INSTRUCTION_DELAY);
                 // TODO: send back any data that was created during the instruction execution
             }
         }
         Serial.println("--------------------------------------------------------");
+
+        /* Check if we are still connected */
+        if (false == comm.isStillConnected())
+        {
+            /* If we have lost connection wait for reconnect */
+            comm.waitForConnection();
+        }
+
     }
 
     delay(MAIN_LOOP_DELAY);
 }
 
+/**
+ * Execute the given instruction
+ *
+ * @param instruction The instruction to execute
+ */
 bool executeInstruction (Instruction instruction)
 {
     bool errorOccurred = false;
@@ -192,6 +205,12 @@ bool executeInstruction (Instruction instruction)
     return errorOccurred;
 }
 
+
+/**
+ * Verify that an instruction is valid and can be executed
+ *
+ * @param instruction The instruction to verify
+ */
 bool verifyInstruction (Instruction instruction)
 {
     bool errorOccurred = false;
@@ -229,20 +248,11 @@ bool verifyInstruction (Instruction instruction)
     return errorOccurred;
 }
 
-void todo1 ()
-{
-    if (digitalRead(COMM_BUTTON_PIN) == LOW)
-    {
-        Serial.println("button pressed");
-        char charArray[] = "123:1,425:2,552:3,234:4,234:5,213:6,213:7,243:8,125:9\n";
-        comm.sendMessage(charArray);
-        Serial.println("data sent");
-        delay(2000);
-        Serial.println("delay started");
-    }
-
-}
-
+/**
+ * Parses a given instruction string an turns it into an instruction struct
+ *
+ * @param insStr the instruction string to parse
+ */
 Instruction parseInstructionString (char* insStr)
 {
     char* parserBuffer [PARSER_BUFFER_SIZE];
@@ -275,6 +285,15 @@ Instruction parseInstructionString (char* insStr)
     return tempInstruction;
 }
 
+
+/**
+ * Display a message on the LCD screen
+ *
+ * @param line1 The string to display on line one (16 characters max)
+ * @param line2 The string to display on line two (16 characters max)
+ * @param dTime The time to keep the message on the screen for (delays)
+ * @param lcd The lcd to print the message to
+ */
 void showLcdMessage(const char* line1, const char* line2, uint16_t dTime, LiquidCrystal& lcd)
 {
     if (NULL == line1 || NULL == line2)
@@ -291,6 +310,14 @@ void showLcdMessage(const char* line1, const char* line2, uint16_t dTime, Liquid
     delay(dTime);
 }
 
+
+/**
+ * Halt execution until a given button is pressed
+ *
+ * @param btn The button that will be polled for a press
+ * @param dTime The time to delay for after the button is pressed
+ * @param lcd Lcd to print "button pressed" message to
+ */
 void pressButtonToContinue(uint8_t btn, uint32_t dTime, LiquidCrystal& lcd)
 {
     pinMode(btn, INPUT_PULLUP);

@@ -74,46 +74,16 @@ void RemoteComm::waitForConnection ()
             }
         }
 
-        if (handShakeSignalA)
-        {
-            /* We have a connection, blink led slower and wait for button press */
-            interval = REMOTE_COMM_CONNECTED_INTERVAL;
+        /* Stop looping once we have connected after stage A */
+        keepLooping = !handShakeSignalA;
 
-            /* Update Lcd message */
-            _lcd->clear();
-            _lcd->setCursor(0,0);
-            _lcd->print("Connected press");
-            _lcd->setCursor(0,1);
-            _lcd->print("C to continue");
-            while (keepLooping)
-            {
-                currTime = millis();
-                if (currTime - prevTime >= interval)
-                {
-                    prevTime = currTime;
-                    ledValue = (ledValue == HIGH) ? LOW : HIGH;
-                    digitalWrite(_led, ledValue);
-                }
-
-                /* Check to see if the user pressed the button, continue if so */
-                switchValue = digitalRead(_button);
-                keepLooping = (switchValue == HIGH) ? true : false;
-            }
-
-            /* Send signal to say we've pressed the button and to continue */
-            Serial1.println(HANDSHAKE_SIGNAL_B);
-            _print->println("send hand shake stage B signal");
-        }
+        /* Send signal to say we've received the response */
+        Serial1.println(HANDSHAKE_SIGNAL_B);
+        _print->println("send hand shake stage B signal");
     }
 
     /* Set the led to a solid light to signal program will continue */
     digitalWrite(_led, HIGH);
-
-    /*
-       Place a delay here , it will act as simple debounce mechanism
-       as the button might still read high for a while after it is pressed
-     */
-    delay(REMOTE_COMM_DEBOUNCE_TIME_MS);
 }
 
 bool RemoteComm::isStillConnected ()
