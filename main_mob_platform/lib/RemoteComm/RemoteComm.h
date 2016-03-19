@@ -19,8 +19,8 @@
 /* Defs related to the serial handshake procedure */
 #define HANDSHAKE_RECEIVE_SIGNAL 'S'
 #define HANDSHAKE_PULSE_INTERVAL 500
-#define HANDSHAKE_SIGNAL_A 'A'
-#define HANDSHAKE_SIGNAL_B 'B'
+#define HANDSHAKE_SIGNAL_A "A;"
+#define HANDSHAKE_SIGNAL_B "B;"
 
 class RemoteComm
 {

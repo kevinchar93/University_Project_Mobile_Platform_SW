@@ -12,11 +12,11 @@
 #define INSTRUCTION_BUFFER_SIZE 32
 
 /* Defs related to the instruction handling */
-#define PARSER_BUFFER_SIZE 3    // instructions have upto 3 components: type, value & gridmode
-#define INSTRUCTION_VERIFIED_OK "INS_OK"
-#define INSTRUCTION_VERIFIED_ERROR "INS_ERR"
-#define INSTRUCTION_COMPLETE "INS_DONE"
-#define INSTRUCTION_DATA_AVAILABLE "INS_DATA_AVAIL"
+#define PARSER_BUFFER_SIZE 4    // instructions have upto 3 components: type, value & gridmode
+#define INSTRUCTION_VERIFIED_OK "INS_OK;"
+#define INSTRUCTION_VERIFIED_ERROR "INS_ERR;"
+#define INSTRUCTION_COMPLETE "INS_DONE;"
+#define INSTRUCTION_DATA_AVAILABLE "INS_DATA_AVAIL;"
 #define INSTRUCTION_DELAY 250
 
 /* Defs related to the robots motion */

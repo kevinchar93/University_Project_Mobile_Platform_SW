@@ -40,9 +40,10 @@ enum MOB_TYPES
 */
 enum INSTRUCTION_FIELD
 {
-    INSTRUCTION_FIELD_TYPE                 = 0,
-    INSTRUCTION_FIELD_VALUE                = 1,
+    INSTRUCTION_FIELD_TYPE             = 0,
+    INSTRUCTION_FIELD_VALUE            = 1,
     INSTRUCTION_FIELD_GRID_MODE        = 2,
+    INSTRUCTION_FIELD_GRIDE_SIZE       = 3,
     INSTRUCTION_FIELD_MAX
 };
 
@@ -53,7 +54,8 @@ enum INSTRUCTION_FIELD
 typedef struct _Instruction
 {
     INSTRUCTION_SET type;
-    unsigned int     value;
-    bool    gridMode;
+    unsigned int    value;
+    unsigned int    gridSizeMM;
+    bool            gridMode;
 } Instruction;
 #endif

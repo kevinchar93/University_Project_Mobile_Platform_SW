@@ -26,7 +26,7 @@ AccelStepper rightDriveStepper(AccelStepper::DRIVER, RIGHT_MOTOR_STEP, RIGHT_MOT
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 /* Vars used to abstract and control the 3 hardware systems used in the robot */
-RemoteComm comm;
+RemoteComm com;
 Lidar360 lidar;
 DiffDrive driveSystem;
 
@@ -39,12 +39,12 @@ void setup()
     bytesRead = 0;
     insErrorOccurred = false;
 
-    /* Kick off the debug serial comm and the lcd screen */
+    /* Kick off the debug serial com and the lcd screen */
     Serial.begin(9600);
     lcd.begin(LCD_COLS, LCD_ROWS);
 
     /* Call the initialisation methods for RemoteComm, DiffDrive and Lidar360 */
-    comm.init(COMM_STATE_PIN, COMM_BUTTON_PIN, COMM_LED_PIN, COMM_BAUD_RATE, Serial, lcd);
+    com.init(COMM_STATE_PIN, COMM_BUTTON_PIN, COMM_LED_PIN, COMM_BAUD_RATE, Serial, lcd);
     driveSystem.init(MAX_DRIVE_SPEED, LEFT_MOTOR_SLEEP, RIGHT_MOTOR_SLEEP, leftDriveStepper, rightDriveStepper, Serial, lcd);
     lidar.init(LIDAR_MAX_SPEED, LIDAR_BUTTON_A, LIDAR_BUTTON_B, LIDAR_MOTOR_SLEEP, LIDAR_MODULE_EN, lidarStepper, Serial, lcd);
 
@@ -55,7 +55,8 @@ void setup()
     lidar.zeroStepperMotor();
 
     /* Once this is done we can begin waiting for a connection to the control software */
-    comm.waitForConnection();
+    com.waitForConnection();
+    Serial.println("Connected");
 }
 
 
@@ -64,7 +65,7 @@ void loop()
     showLcdMessage("Waiting for an", "instruction", 0, lcd);
 
     /* Check for instructions & read them into buffer */
-    if ((instructionBytes = comm.isInstructionAvailable()) > 0 )
+    if ((instructionBytes = com.isInstructionAvailable()) > 0 )
     {
         showLcdMessage("Instruction", "received!", 0, lcd);
 
@@ -75,7 +76,7 @@ void loop()
         memset(instructionBuffer, 0, sizeof(instructionBuffer));
 
         /* Read all the bytes from the serial buffer into the instruction buffer */
-        bytesRead = comm.readInstructions(instructionBuffer, instructionBytes);
+        bytesRead = com.readInstructions(instructionBuffer, instructionBytes);
         Serial.print("instruction bytes: ");
         Serial.print(instructionBytes);
         Serial.print(", message: ");
@@ -103,14 +104,14 @@ void loop()
             Serial.println("Error occured, send error message");
 
             /* Send a message to the control sw that an error ocurred */
-            comm.sendMessage(INSTRUCTION_VERIFIED_ERROR);
+            com.sendMessage(INSTRUCTION_VERIFIED_ERROR);
         }
         else
         {
             Serial.println("No error occured, send okay message");
 
             /* Send verification okay message back */
-            comm.sendMessage(INSTRUCTION_VERIFIED_OK);
+            com.sendMessage(INSTRUCTION_VERIFIED_OK);
 
             /* Execute the instruction */
             insErrorOccurred = executeInstruction(currInstruction);
@@ -119,28 +120,55 @@ void loop()
             {
                 Serial.println("Error occured, send error message");
                 /* Send a message to the control sw that an error ocurred */
-                comm.sendMessage(INSTRUCTION_VERIFIED_ERROR);
+                com.sendMessage(INSTRUCTION_VERIFIED_ERROR);
             }
             else
             {
-                Serial.println("No error occured, send complete message");
                 /* Send verification completion message back */
-                comm.sendMessage(INSTRUCTION_COMPLETE);
+                delay(INSTRUCTION_DELAY);
+                switch (currInstruction.type)
+                {
+                    case INS_MOVE_FORWARD:
+                    case INS_MOVE_BACKWARD:
+                    case INS_TURN_ZERO_RIGHT_90:
+                    case INS_TURN_ZERO_LEFT_90:
+                    case INS_TURN_AROUND_180:
+                        Serial.println("No error occured, send complete message");
+                        com.sendMessage(INSTRUCTION_COMPLETE);
+                        break;
+                    case INS_LIDAR_360_SWEEP:
+                    case INS_LIDAR_AT_ANGLE:
+                        Serial.println("No error occured, send data available message");
+                        com.sendMessage(INSTRUCTION_DATA_AVAILABLE);
+                        break;
+                }
 
                 /* Wait a period of time for the control sw to recieve the message before sending data */
                 delay(INSTRUCTION_DELAY);
-                // TODO: send back any data that was created during the instruction execution
+
+                /* Send data that was created on either a sweep or measurment at heading */
+                switch (currInstruction.type)
+                {
+                    case INS_LIDAR_360_SWEEP:
+                        Serial.println("Send sweep data");
+                        com.sendMessage(lidarDataBuffer);
+                        break;
+                    case INS_LIDAR_AT_ANGLE:
+                        Serial.println("Send heading data");
+                        Serial.println(lidarHeadingDistBuffer);
+                        com.sendMessage(lidarHeadingDistBuffer);
+                        break;
+                }
             }
         }
         Serial.println("--------------------------------------------------------");
+    }
 
-        /* Check if we are still connected */
-        if (false == comm.isStillConnected())
-        {
-            /* If we have lost connection wait for reconnect */
-            comm.waitForConnection();
-        }
-
+    /* Check if we are still connected */
+    if (false == com.isStillConnected())
+    {
+        /* If we have lost connection wait for reconnect */
+        com.waitForConnection();
     }
 
     delay(MAIN_LOOP_DELAY);
@@ -154,45 +182,37 @@ void loop()
 bool executeInstruction (Instruction instruction)
 {
     bool errorOccurred = false;
-    const uint16_t defaultGridSizeMM = 0;
 
     switch (instruction.type)
     {
         case INS_MOVE_FORWARD:
-            driveSystem.moveForward(instruction.value, instruction.gridMode, defaultGridSizeMM);
+            driveSystem.moveForward(instruction.value, instruction.gridMode, instruction.gridSizeMM);
             errorOccurred = false;
             break;
-
         case INS_MOVE_BACKWARD:
-            driveSystem.moveBackward(instruction.value, instruction.gridMode, defaultGridSizeMM);
+            driveSystem.moveBackward(instruction.value, instruction.gridMode, instruction.gridSizeMM);
             errorOccurred = false;
             break;
-
         case INS_TURN_ZERO_RIGHT_90:
             driveSystem.turnRight90Degrees();
             errorOccurred = false;
             break;
-
         case INS_TURN_ZERO_LEFT_90:
             driveSystem.turnLeft90Degrees();
             errorOccurred = false;
             break;
-
         case INS_TURN_AROUND_180:
             driveSystem.turnAround180Degrees();
             errorOccurred = false;
             break;
-
         case INS_LIDAR_360_SWEEP:
             lidar.getDistanceSweep(lidarDataBuffer, sizeof(lidarDataBuffer));
             errorOccurred = false;
             break;
-
         case INS_LIDAR_AT_ANGLE:
             lidar.getDistanceAtHeading(instruction.value, lidarHeadingDistBuffer, sizeof(lidarHeadingDistBuffer));
             errorOccurred = false;
             break;
-
         case INS_STOP:
         case INS_ERROR:
         /* These instruction do not occur */
@@ -221,7 +241,6 @@ bool verifyInstruction (Instruction instruction)
             // instruction parser wasn't able to parse the number
             errorOccurred = true;
             break;
-
         case INS_STOP:
         case INS_MOVE_FORWARD:
         case INS_MOVE_BACKWARD:
@@ -231,7 +250,6 @@ bool verifyInstruction (Instruction instruction)
         case INS_LIDAR_360_SWEEP:
             errorOccurred = false;
             break;
-
         case INS_LIDAR_AT_ANGLE:
             if (instruction.value <= MAX_LIDAR_ANGLE)
             {
@@ -258,12 +276,13 @@ Instruction parseInstructionString (char* insStr)
     char* parserBuffer [PARSER_BUFFER_SIZE];
     int type;
     int val;
+    int gridSizeMM;
     bool gridMode;
 
     Instruction tempInstruction;
 
     /* Split the instruction string into tokens we can parse */
-    for(int i = INSTRUCTION_FIELD_TYPE; i < INSTRUCTION_FIELD_MAX; i++)
+    for(int i = 0; i < PARSER_BUFFER_SIZE; i++)
     {
         parserBuffer[i] = strtok((i==0) ? insStr : NULL, ",;");
     }
@@ -277,10 +296,14 @@ Instruction parseInstructionString (char* insStr)
     gridMode = (parserBuffer[INSTRUCTION_FIELD_GRID_MODE][0] == 'T' ) ?
                 true : false;
 
+    gridSizeMM = (parserBuffer[INSTRUCTION_FIELD_GRIDE_SIZE] == NULL) ?
+            0 : atoi(parserBuffer[INSTRUCTION_FIELD_GRIDE_SIZE]);
+
     /* Put the extracted values into the instruction struct and return it */
     tempInstruction.type = (INSTRUCTION_SET) type;
     tempInstruction.value = val;
     tempInstruction.gridMode = gridMode;
+    tempInstruction.gridSizeMM = gridSizeMM;
 
     return tempInstruction;
 }

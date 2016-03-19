@@ -78,8 +78,11 @@ void RemoteComm::waitForConnection ()
         keepLooping = !handShakeSignalA;
 
         /* Send signal to say we've received the response */
-        Serial1.println(HANDSHAKE_SIGNAL_B);
-        _print->println("send hand shake stage B signal");
+        if (handShakeSignalA)
+        {
+            Serial1.println(HANDSHAKE_SIGNAL_B);
+            _print->println("send hand shake stage B signal");
+        }
     }
 
     /* Set the led to a solid light to signal program will continue */
@@ -89,11 +92,7 @@ void RemoteComm::waitForConnection ()
 bool RemoteComm::isStillConnected ()
 {
     /* Check bluetooth module state pin to see if we still have connection */
-    if (_isInit)
-    {
-        return (digitalRead(_state) == HIGH);
-    }
-    return false;
+    return (digitalRead(_state) == HIGH);
 }
 
 int RemoteComm::sendMessage (const char* readings)
