@@ -125,7 +125,6 @@ void loop()
             else
             {
                 /* Send verification completion message back */
-                delay(INSTRUCTION_DELAY);
                 switch (currInstruction.type)
                 {
                     case INS_MOVE_FORWARD:
@@ -142,9 +141,6 @@ void loop()
                         com.sendMessage(INSTRUCTION_DATA_AVAILABLE);
                         break;
                 }
-
-                /* Wait a period of time for the control sw to recieve the message before sending data */
-                delay(INSTRUCTION_DELAY);
 
                 /* Send data that was created on either a sweep or measurment at heading */
                 switch (currInstruction.type)
