@@ -20,3 +20,8 @@ In total for the project 4 deliverables were created (links to repos in brackets
 
 <more details about the mobile platfrom software>
 
+## License
+
+Copyright © 2016 Kevin Charles
+
+Distributed under the MIT License
